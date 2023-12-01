@@ -15,14 +15,6 @@ public class GenerateDays {
         }
 
         for (int number = 0; number <= 25; number++) {
-            // StringBuilder buildPackage = new StringBuilder();
-            // for (String string : folders) {
-            // buildPackage.append(string + ".");
-            // }
-            // String packageBase = buildPackage.toString();
-
-            // System.out.println("packgeName: " + packageName);
-
             String dayNum = String.format("%02d", number);
             String fileName = path + "days/Day" + dayNum + ".java";
 
@@ -59,6 +51,12 @@ public class GenerateDays {
                     "    public StringBuilder solveSample(List<String> lines) {\n" + //
                     "        StringBuilder result = new StringBuilder();\n" + //
                     "\n" + //
+                    "        result.append(solveFirstPart(lines));\n" + //
+                    "        result.append(\"\\n" + //
+                    "---\\n" + //
+                    "\");\n" + //
+                    "        result.append(solveSecondPart(lines));\n" + //
+                    "\n" + //
                     "        return result;\n" + //
                     "    }\n" + //
                     "\n" + //
@@ -75,29 +73,6 @@ public class GenerateDays {
                     "    }\n" + //
                     "\n" + //
                     "}";
-            // String content = "package " + packageBase + "days;\n" + //
-            // "\n" + //
-            // "import " + packageBase + "util.ReadFile;\n" + //
-            // "\n" + //
-            // "import java.util.List;\n" + //
-            // "\n" + //
-            // "public class Day" + dayNum + " implements DayInterface {\n" + //
-            // "\n" + //
-            // " public String solve(int part) {\n" + //
-            // " List<String> lines = ReadFile.getData(\"" + path + "data/day" + dayNum +
-            // ".txt\");\n" + //
-            // " if (lines == null || lines.size() == 0) {\n" + //
-            // " return \"Day " + dayNum + " is not available\";\n" + //
-            // " }\n" + //
-            // " StringBuilder str = new StringBuilder();\n" + //
-            // "\n" + //
-            // " // gaming\n" + //
-            // "\n\n\n\n" + //
-            // " if(str.isEmpty()) return \"Day " + dayNum + " Unimplemented\";\n" + //
-            // " return str.toString();\n" + //
-            // " }\n" + //
-            // "\n" + //
-            // "}";
 
             try (FileWriter fileWriter = new FileWriter(fileName)) {
                 fileWriter.write(content);

@@ -29,6 +29,10 @@ public class Day25 implements DayInterface {
     public StringBuilder solveSample(List<String> lines) {
         StringBuilder result = new StringBuilder();
 
+        result.append(solveFirstPart(lines));
+        result.append("\n---\n");
+        result.append(solveSecondPart(lines));
+
         return result;
     }
 
