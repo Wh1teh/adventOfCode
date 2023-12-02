@@ -2,11 +2,9 @@ package com.aoc.days;
 
 import com.aoc.util.ReadFile;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 public class Day02 implements DayInterface {
 
@@ -108,28 +106,12 @@ public class Day02 implements DayInterface {
         return result.append(sum);
     }
 
-    private String parseColor(String line, int index) {
-        StringBuilder color = new StringBuilder();
-        while (index < line.length() && Character.isLetter(line.charAt(index))) {
-            color.append(line.charAt(index++));
-        }
-        return color.toString();
-    }
-
     private String parseColor(String line, int[] index) {
         StringBuilder color = new StringBuilder();
         while (index[0] < line.length() && Character.isLetter(line.charAt(index[0]))) {
             color.append(line.charAt(index[0]++));
         }
         return color.toString();
-    }
-
-    private String parseAmount(String line, int index) {
-        StringBuilder number = new StringBuilder();
-        while (index < line.length() && Character.isDigit(line.charAt(index))) {
-            number.append(line.charAt(index++));
-        }
-        return number.toString();
     }
 
     private String parseAmount(String line, int[] index) {
