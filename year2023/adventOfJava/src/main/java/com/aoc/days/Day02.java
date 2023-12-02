@@ -170,19 +170,15 @@ public class Day02 implements DayInterface {
         if (part == 2) {
             int power = 1;
 
-            System.out.println("game:" + game);
             // get power for part 2
             for (Map.Entry<String, Integer> entry : minDice.entrySet()) {
                 String key = entry.getKey();
                 Integer diceLeft = entry.getValue();
 
-                System.out.println(key + ":" + (diceBase.get(key) - diceLeft));
-
                 int minimumDice = diceBase.get(key) - diceLeft;
                 power *= minimumDice > 0 ? minimumDice : 1;
             }
 
-            System.out.println("returning power: " + power);
             return power;
         }
 
