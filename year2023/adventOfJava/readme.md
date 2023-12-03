@@ -18,4 +18,4 @@ mvn install
 mvn exec:java  -Dexec.mainClass=com.aoc.AdventOfCode -Dexec.args="0 0"
 ```
 
-`-Dexec.args="<day(0-25)> <part(0/1/2)>"` Change args depending on which answer you wish to see
+`-Dexec.args="<day(0-25)> <part(0/1/2)>"` Change args depending on which answer you wish to see, or no args if you wish to play all days.
