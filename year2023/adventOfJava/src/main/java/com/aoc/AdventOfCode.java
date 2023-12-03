@@ -30,7 +30,7 @@ public class AdventOfCode {
             System.out.println(
                     "day:%d or part:%d not provided, playing each day...".formatted(day, part));
 
-            for (int i = 0; i < 25; i++) {
+            for (int i = 0; i <= 25; i++) {
                 Class<? extends DayInterface> daySolverClass = ClassEnum.getClassByIndex(i);
                 if (daySolverClass != null) {
                     try {
