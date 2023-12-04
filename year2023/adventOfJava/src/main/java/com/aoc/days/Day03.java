@@ -2,14 +2,11 @@ package com.aoc.days;
 
 import com.aoc.util.ReadFile;
 import com.aoc.util.Coordinates;
-import com.aoc.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Day03 implements DayInterface {
 
