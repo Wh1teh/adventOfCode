@@ -10,6 +10,11 @@ public class AdventOfCode {
     private static final int DEFAULT_ROUNDS = 100;
 
     public static void main(String[] args) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // print newline when ctrl + c
+            System.out.println();
+        }));
+
         // parse args
         int day = getDay(args);
         int part = getPart(args);
