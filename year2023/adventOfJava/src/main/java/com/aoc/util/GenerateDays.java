@@ -7,69 +7,35 @@ import java.io.InputStreamReader;
 
 public class GenerateDays {
 
-    public static void generate(String path, String packageBase) {
+    public static void main(String[] args) {
+        generate("year2023/adventOfJava/src/main/java/com/aoc/", "com.aoc.", 7, 25);
+    }
+
+    public static void generate(String path, String packageBase, int from, int to) {
         String[] folders = path.split("/");
 
         if (!checkRootFolder(folders[0])) {
             throw new IllegalStateException("no %s in root folder".formatted(folders[0]));
         }
 
-        for (int number = 0; number <= 25; number++) {
+        for (int number = from; number <= to; number++) {
             String dayNum = String.format("%02d", number);
             String fileName = path + "days/Day" + dayNum + ".java";
 
-            String content = "package " + packageBase + "days;\n" + //
+            String content = "package com.aoc.days;\n" + //
                     "\n" + //
-                    "import " + packageBase + "util.ReadFile;\n" + //
+                    "public class Day" + dayNum + " extends Day {\n" + //
                     "\n" + //
-                    "import java.util.List;\n" + //
+                    "    @Override\n" + //
+                    "    public String solveFirstPart() {\n" + //
                     "\n" + //
-                    "public class Day" + dayNum + " implements DayInterface {\n" + //
-                    "\n" + //
-                    "    public String solve(int part) {\n" + //
-                    "        List<String> lines = ReadFile.getData(\n" + //
-                    "                \"" + path + "data/day" + dayNum
-                    + "\" + (part == 0 ? \"_sample\" : \"\") + \".txt\");\n"
-                    + //
-                    "        if (lines == null || lines.size() == 0) {\n" + //
-                    "            return \"Day " + dayNum + " is not available\";\n" + //
-                    "        }\n" + //
-                    "        StringBuilder str = new StringBuilder();\n" + //
-                    "\n" + //
-                    "        str = switch (part) {\n" + //
-                    "            case 0 -> solveSample(lines);\n" + //
-                    "            case 1 -> solveFirstPart(lines);\n" + //
-                    "            case 2 -> solveSecondPart(lines);\n" + //
-                    "            default -> throw new IllegalArgumentException(\"Unexpected value: \" + part);\n" + //
-                    "        };\n" + //
-                    "\n" + //
-                    "        if (str.isEmpty())\n" + //
-                    "            return \"Day " + dayNum + " part \" + part + \" is Unimplemented\";\n" + //
-                    "        return str.toString();\n" + //
+                    "        return \"\";\n" + //
                     "    }\n" + //
                     "\n" + //
-                    "    public StringBuilder solveSample(List<String> lines) {\n" + //
-                    "        StringBuilder result = new StringBuilder();\n" + //
+                    "    @Override\n" + //
+                    "    public String solveSecondPart() {\n" + //
                     "\n" + //
-                    "        result.append(solveFirstPart(lines));\n" + //
-                    "        result.append(\"\\n" + //
-                    "---\\n" + //
-                    "\");\n" + //
-                    "        result.append(solveSecondPart(lines));\n" + //
-                    "\n" + //
-                    "        return result;\n" + //
-                    "    }\n" + //
-                    "\n" + //
-                    "    public StringBuilder solveFirstPart(List<String> lines) {\n" + //
-                    "        StringBuilder result = new StringBuilder();\n" + //
-                    "\n" + //
-                    "        return result;\n" + //
-                    "    }\n" + //
-                    "\n" + //
-                    "    public StringBuilder solveSecondPart(List<String> lines) {\n" + //
-                    "        StringBuilder result = new StringBuilder();\n" + //
-                    "\n" + //
-                    "        return result;\n" + //
+                    "        return \"\";\n" + //
                     "    }\n" + //
                     "\n" + //
                     "}";

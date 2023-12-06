@@ -1,6 +1,5 @@
 package com.aoc.days;
 
-import com.aoc.util.ReadFile;
 import com.aoc.util.Coordinates;
 
 import java.util.ArrayList;
@@ -8,37 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Day03 implements DayInterface {
-
-    public String solve(int part) {
-        List<String> lines = ReadFile.getData(
-                "src/main/java/com/aoc/data/day03" + (part == 0 ? "_sample" : "") + ".txt");
-        if (lines == null || lines.size() == 0) {
-            return "Day 03 is not available";
-        }
-        StringBuilder str = new StringBuilder();
-
-        str = switch (part) {
-            case 0 -> solveSample(lines);
-            case 1 -> solveFirstPart(lines);
-            case 2 -> solveSecondPart(lines);
-            default -> throw new IllegalArgumentException("Unexpected value: " + part);
-        };
-
-        if (str.isEmpty())
-            return "Day 03 part " + part + " is Unimplemented";
-        return str.toString();
-    }
-
-    public StringBuilder solveSample(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        result.append(solveFirstPart(lines));
-        result.append("\n---\n");
-        result.append(solveSecondPart(lines));
-
-        return result;
-    }
+public class Day03 extends Day {
 
     /*
      * --- Day 3: Gear Ratios ---
@@ -88,13 +57,12 @@ public class Day03 implements DayInterface {
      * 
      * 
      */
-    public StringBuilder solveFirstPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveFirstPart() {
         List<Integer> numbers = new ArrayList<>();
         int index = 0;
-        for (String line : lines) {
-            numbers.addAll(getValidNumbers(lines, line, index++));
+        for (String line : LINES) {
+            numbers.addAll(getValidNumbers(LINES, line, index++));
         }
 
         int sum = 0;
@@ -102,7 +70,7 @@ public class Day03 implements DayInterface {
             sum += num;
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
     private List<Integer> getValidNumbers(List<String> lines, String line, int lineIndex) {
@@ -210,11 +178,10 @@ public class Day03 implements DayInterface {
      * 
      * What is the sum of all of the gear ratios in your engine schematic?
      */
-    public StringBuilder solveSecondPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        Map<Coordinates, Integer> numbers = getCoordinatedNumbers(lines);
-        Map<Coordinates, Character> gears = getCoordinatedGears(lines);
+    @Override
+    public String solveSecondPart() {
+        Map<Coordinates, Integer> numbers = getCoordinatedNumbers(LINES);
+        Map<Coordinates, Character> gears = getCoordinatedGears(LINES);
         List<List<Integer>> pairs = getGearedPairs(numbers, gears);
 
         int sum = 0;
@@ -222,7 +189,7 @@ public class Day03 implements DayInterface {
             sum += pair.get(0) * pair.get(1);
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
     private List<List<Integer>> getGearedPairs(Map<Coordinates, Integer> numbers, Map<Coordinates, Character> gears) {

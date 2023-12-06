@@ -1,44 +1,12 @@
 package com.aoc.days;
 
-import com.aoc.util.ReadFile;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Day01 implements DayInterface {
-
-    public String solve(int part) {
-        List<String> lines = ReadFile.getData(
-                "src/main/java/com/aoc/data/day01" + (part == 0 ? "_sample" : "") + ".txt");
-        if (lines == null || lines.size() == 0) {
-            return "Day 01 is not available";
-        }
-        StringBuilder str = new StringBuilder();
-
-        str = switch (part) {
-            case 0 -> solveSample(lines);
-            case 1 -> solveFirstPart(lines);
-            case 2 -> solveSecondPart(lines);
-            default -> throw new IllegalArgumentException("Unexpected value: " + part);
-        };
-
-        if (str.isEmpty())
-            return "Day 01 part " + part + " is Unimplemented";
-        return str.toString();
-    }
-
-    public StringBuilder solveSample(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        result.append(solveFirstPart(lines));
-        result.append("\n---\n");
-        result.append(solveSecondPart(lines));
-
-        return result;
-    }
+public class Day01 extends Day {
 
     /*
      * --- Day 1: Trebuchet?! ---
@@ -83,13 +51,11 @@ public class Day01 implements DayInterface {
      * Consider your entire calibration document. What is the sum of all of the
      * calibration values?
      */
-
-    public StringBuilder solveFirstPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveFirstPart() {
         // iterate all lines once
         int sum = 0;
-        for (String line : lines) {
+        for (String line : LINES) {
             LinkedList<Integer> digits = new LinkedList<>();
 
             for (int i = 0; i < line.length(); i++) {
@@ -105,7 +71,7 @@ public class Day01 implements DayInterface {
             }
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
     /*
@@ -129,9 +95,8 @@ public class Day01 implements DayInterface {
      * 
      * What is the sum of all of the calibration values?
      */
-    public StringBuilder solveSecondPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveSecondPart() {
         List<String> words = Arrays.asList(
                 "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine");
 
@@ -145,7 +110,7 @@ public class Day01 implements DayInterface {
 
         // iterate all lines once
         int sum = 0;
-        for (String line : lines) {
+        for (String line : LINES) {
             LinkedList<Integer> digits = new LinkedList<>();
             StringBuilder buffer = new StringBuilder();
 
@@ -172,7 +137,7 @@ public class Day01 implements DayInterface {
             }
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
 }

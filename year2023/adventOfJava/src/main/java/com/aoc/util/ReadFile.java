@@ -20,7 +20,8 @@ public class ReadFile {
                 System.out.println("File Content:\n" + lines);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            return null;
         }
 
         return lines;

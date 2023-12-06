@@ -1,45 +1,11 @@
 package com.aoc.days;
 
-import com.aoc.util.ReadFile;
-
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Day04 implements DayInterface {
-
-    public String solve(int part) {
-        List<String> lines = ReadFile.getData(
-                "src/main/java/com/aoc/data/day04" + (part == 0 ? "_sample" : "") + ".txt");
-        if (lines == null || lines.size() == 0) {
-            return "Day 04 is not available";
-        }
-        StringBuilder str = new StringBuilder();
-
-        str = switch (part) {
-            case 0 -> solveSample(lines);
-            case 1 -> solveFirstPart(lines);
-            case 2 -> solveSecondPart(lines);
-            default -> throw new IllegalArgumentException("Unexpected value: " + part);
-        };
-
-        if (str.isEmpty())
-            return "Day 04 part " + part + " is Unimplemented";
-        return str.toString();
-    }
-
-    public StringBuilder solveSample(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        result.append(solveFirstPart(lines));
-        result.append("\n---\n");
-        result.append(solveSecondPart(lines));
-
-        return result;
-    }
+public class Day04 extends Day {
 
     /*
      * --- Day 4: Scratchcards ---
@@ -96,15 +62,14 @@ public class Day04 implements DayInterface {
      * Take a seat in the large pile of colorful cards. How many points are they
      * worth in total?
      */
-    public StringBuilder solveFirstPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveFirstPart() {
         int sum = 0;
-        for (String line : lines) {
+        for (String line : LINES) {
             sum += playGame(line);
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
     private int playGame(String line) {
@@ -189,15 +154,12 @@ public class Day04 implements DayInterface {
      * scratchcards are won. Including the original set of scratchcards, how many
      * total scratchcards do you end up with?
      */
-    public StringBuilder solveSecondPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        // Instant start = Instant.now();
-
+    @Override
+    public String solveSecondPart() {
         // <card index, win amounts>
         Map<Integer, Long> winnings = new HashMap<>();
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
+        for (int i = 0; i < LINES.size(); i++) {
+            String line = LINES.get(i);
             Long sum = playGameRedux(line);
 
             winnings.put(i, sum);
@@ -216,7 +178,7 @@ public class Day04 implements DayInterface {
         // Duration duration = Duration.between(start, end);
         // System.out.println("took: " + duration.toMillis() + "ms");
 
-        return result.append(asd);
+        return "" + asd;
     }
 
     private void countTotalWinnings(Map<Integer, Long> winnings, int index) {

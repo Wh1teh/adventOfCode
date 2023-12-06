@@ -1,42 +1,6 @@
 package com.aoc.days;
 
-import com.aoc.util.Pair;
-import com.aoc.util.ReadFile;
-
-import java.rmi.UnexpectedException;
-import java.util.List;
-
-public class Day06 implements DayInterface {
-
-    public String solve(int part) {
-        List<String> lines = ReadFile.getData(
-                "src/main/java/com/aoc/data/day06" + (part == 0 ? "_sample" : "") + ".txt");
-        if (lines == null || lines.size() == 0) {
-            return "Day 06 is not available";
-        }
-        StringBuilder str = new StringBuilder();
-
-        str = switch (part) {
-            case 0 -> solveSample(lines);
-            case 1 -> solveFirstPart(lines);
-            case 2 -> solveSecondPart(lines);
-            default -> throw new IllegalArgumentException("Unexpected value: " + part);
-        };
-
-        if (str.isEmpty())
-            return "Day 06 part " + part + " is Unimplemented";
-        return str.toString();
-    }
-
-    public StringBuilder solveSample(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        result.append(solveFirstPart(lines));
-        result.append("\n---\n");
-        result.append(solveSecondPart(lines));
-
-        return result;
-    }
+public class Day06 extends Day {
 
     /*
      * --- Day 6: Wait For It ---
@@ -127,18 +91,17 @@ public class Day06 implements DayInterface {
      * Determine the number of ways you could beat the record in each race. What do
      * you get if you multiply these numbers together?
      */
-    public StringBuilder solveFirstPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        String[] raceLens = lines.get(0).split("\\s+");
-        String[] raceRecords = lines.get(1).split("\\s+");
+    @Override
+    public String solveFirstPart() {
+        String[] raceLens = LINES.get(0).split("\\s+");
+        String[] raceRecords = LINES.get(1).split("\\s+");
 
         int waysOfWinning = 1;
         for (int i = 1; i < raceRecords.length; i++) {
             waysOfWinning *= calculateRaceMargins(Long.parseLong(raceLens[i]), Long.parseLong(raceRecords[i]));
         }
 
-        return result.append(waysOfWinning);
+        return "" + waysOfWinning;
     }
 
     private long calculateRaceMargins(long raceLen, long raceRecord) {
@@ -182,11 +145,10 @@ public class Day06 implements DayInterface {
      * 
      * How many ways can you beat the record in this one much longer race?
      */
-    public StringBuilder solveSecondPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        String[] raceLens = lines.get(0).split("\\s+");
-        String[] raceRecords = lines.get(1).split("\\s+");
+    @Override
+    public String solveSecondPart() {
+        String[] raceLens = LINES.get(0).split("\\s+");
+        String[] raceRecords = LINES.get(1).split("\\s+");
 
         StringBuilder raceLen = new StringBuilder();
         StringBuilder raceRecord = new StringBuilder();
@@ -198,7 +160,7 @@ public class Day06 implements DayInterface {
 
         long lol = calculateRaceMargins(Long.parseLong(raceLen.toString()), Long.parseLong(raceRecord.toString()));
 
-        return result.append(lol);
+        return "" + lol;
     }
 
 }

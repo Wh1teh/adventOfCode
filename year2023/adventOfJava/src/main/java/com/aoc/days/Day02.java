@@ -1,42 +1,9 @@
 package com.aoc.days;
 
-import com.aoc.util.ReadFile;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class Day02 implements DayInterface {
-
-    public String solve(int part) {
-        List<String> lines = ReadFile.getData(
-                "src/main/java/com/aoc/data/day02" + (part == 0 ? "_sample" : "") + ".txt");
-        if (lines == null || lines.size() == 0) {
-            return "Day 02 is not available";
-        }
-        StringBuilder str = new StringBuilder();
-
-        str = switch (part) {
-            case 0 -> solveSample(lines);
-            case 1 -> solveFirstPart(lines);
-            case 2 -> solveSecondPart(lines);
-            default -> throw new IllegalArgumentException("Unexpected value: " + part);
-        };
-
-        if (str.isEmpty())
-            return "Day 02 part " + part + " is Unimplemented";
-        return str.toString();
-    }
-
-    public StringBuilder solveSample(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
-        result.append(solveFirstPart(lines));
-        result.append("\n---\n");
-        result.append(solveSecondPart(lines));
-
-        return result;
-    }
+public class Day02 extends Day {
 
     /*
      * --- Day 2: Cube Conundrum ---
@@ -90,20 +57,19 @@ public class Day02 implements DayInterface {
      * with only 12 red cubes, 13 green cubes, and 14 blue cubes. What is the sum of
      * the IDs of those games?
      */
-    public StringBuilder solveFirstPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveFirstPart() {
         Map<String, Integer> dice = new HashMap<>();
         dice.put("red", 12);
         dice.put("green", 13);
         dice.put("blue", 14);
 
         int sum = 0;
-        for (String line : lines) {
+        for (String line : LINES) {
             sum += playGame(line, dice, 1);
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
     private String parseColor(String line, int[] index) {
@@ -219,20 +185,19 @@ public class Day02 implements DayInterface {
      * For each game, find the minimum set of cubes that must have been present.
      * What is the sum of the power of these sets?
      */
-    public StringBuilder solveSecondPart(List<String> lines) {
-        StringBuilder result = new StringBuilder();
-
+    @Override
+    public String solveSecondPart() {
         Map<String, Integer> dice = new HashMap<>();
         dice.put("red", 12);
         dice.put("green", 13);
         dice.put("blue", 14);
 
         int sum = 0;
-        for (String line : lines) {
+        for (String line : LINES) {
             sum += playGame(line, dice, 2);
         }
 
-        return result.append(sum);
+        return "" + sum;
     }
 
 }
