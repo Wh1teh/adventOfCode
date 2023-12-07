@@ -158,9 +158,69 @@ public class Day06 extends Day {
             raceRecord.append(raceRecords[i]);
         }
 
-        long lol = calculateRaceMargins(Long.parseLong(raceLen.toString()), Long.parseLong(raceRecord.toString()));
+        long len = Long.parseLong(raceLen.toString());
+        long rec = Long.parseLong(raceRecord.toString());
+
+        // long lol = calculateRaceMargins(len, rec);
+        // long lol = pupu(len, rec);
+        long lol = binarySearch(len, rec);
 
         return "" + lol;
+    }
+
+    @SuppressWarnings("unused")
+    private long pupu(long raceLen, long raceRecord) {
+        long d = (raceLen * raceLen) - (4 * 1 * raceRecord);
+        double dSqrt = Math.sqrt(d);
+        long x1 = (long) ((double) raceLen - dSqrt) / (2);
+        long x2 = (long) ((double) raceLen + dSqrt) / (2);
+
+        return x2 - x1;
+    }
+
+    private Long binarySearch(long raceLen, long raceRecord) {
+        long lowerBound = 0L;
+
+        long start = 0L;
+        long end = raceLen;
+        while (start <= end) {
+            long timeHeld = start + (end - start) / 2;
+
+            long dist = dist(timeHeld, raceLen);
+            long distL = dist(timeHeld - 1L, raceLen);
+
+            if (raceRecord < dist && raceRecord < distL) {
+                end = timeHeld - 1L;
+            } else if (raceRecord > dist && raceRecord > distL) {
+                start = timeHeld + 1L;
+            } else {
+                lowerBound = timeHeld;
+                break;
+            }
+        }
+
+        start = 0;
+        end = raceLen;
+        while (start <= end) {
+            long timeHeld = start + (end - start) / 2;
+
+            long dist = dist(timeHeld, raceLen);
+            long distR = dist(timeHeld + 1L, raceLen);
+
+            if (raceRecord > dist && raceRecord > distR) {
+                end = timeHeld - 1;
+            } else if (raceRecord < dist && raceRecord < distR) {
+                start = timeHeld + 1;
+            } else {
+                return timeHeld - lowerBound + 1;
+            }
+        }
+
+        return -1L;
+    }
+
+    private long dist(long timeHeld, long raceLen) {
+        return timeHeld * (raceLen - timeHeld);
     }
 
 }
