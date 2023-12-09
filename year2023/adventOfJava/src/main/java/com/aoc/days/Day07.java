@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.aoc.util.Maths;
+import com.aoc.util.NumberLazy;
 
 public class Day07 extends Day {
 
@@ -120,7 +121,7 @@ public class Day07 extends Day {
         return "" + (int) Maths.sumList(hands, new Maths.MultiplierOperand());
     }
 
-    private class Hand extends Number implements Comparable<Hand> {
+    private class Hand extends NumberLazy implements Comparable<Hand> {
         public boolean firstPart;
 
         public String cards;
@@ -135,6 +136,8 @@ public class Day07 extends Day {
         private List<Character> specialChOrder;
 
         public Hand(String cards, int bid, boolean firstPart, List<Character> specialChOrder) {
+            super(bid);
+
             this.firstPart = firstPart;
 
             this.cards = cards;
@@ -214,26 +217,6 @@ public class Day07 extends Day {
             }
 
             return 0;
-        }
-
-        @Override
-        public int intValue() {
-            return this.bid;
-        }
-
-        @Override
-        public long longValue() {
-            return (long) this.bid;
-        }
-
-        @Override
-        public float floatValue() {
-            return (float) this.bid;
-        }
-
-        @Override
-        public double doubleValue() {
-            return (double) this.bid;
         }
 
     }
