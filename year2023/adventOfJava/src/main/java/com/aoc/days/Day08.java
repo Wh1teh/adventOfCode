@@ -172,8 +172,8 @@ public class Day08 extends Day {
             instructions.add(goRight);
 
             for (int i = 0; i < POSITIONS; i++) {
-                String currentL = parallelPositions.get(i);
-                parallelPositions.set(i, nodes.get(currentL)[goRight ? 1 : 0]);
+                String currentPosition = parallelPositions.get(i);
+                parallelPositions.set(i, nodes.get(currentPosition)[goRight ? 1 : 0]);
 
                 if (positions[i] == 0 && parallelPositions.get(i).charAt(2) == 'Z') {
                     routesFound++;
