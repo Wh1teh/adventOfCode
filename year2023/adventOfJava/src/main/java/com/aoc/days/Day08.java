@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import com.aoc.util.Maths;
+
 public class Day08 extends Day {
 
     /*
@@ -63,37 +65,43 @@ public class Day08 extends Day {
      */
     @Override
     public String solveFirstPart() {
+        Map<String, String[]> nodes = getNodes(LINES);
+        Queue<Boolean> instructions = getInstructions(LINES.get(0));
 
-        // // parse
-        // Map<String, String[]> nodes = new HashMap<>();
-        // for (int row = 2; row < LINES.size(); row++) {
-        // String line = LINES.get(row);
+        String position = "AAA";
+        int steps = 0;
+        while (!position.equals("ZZZ")) {
+            boolean goRight = instructions.poll();
+            instructions.add(goRight);
 
-        // String key = line.substring(0, 3);
-        // String left = line.substring(7, 10);
-        // String right = line.substring(12, 15);
+            position = nodes.get(position)[goRight ? 1 : 0];
 
-        // nodes.put(key, new String[] { left, right });
-        // }
+            steps++;
+        }
 
-        // Queue<Boolean> instructions = new LinkedList<>();
-        // String makkara = LINES.get(0);
-        // for (int i = 0; i < makkara.length(); i++) {
-        // instructions.add(makkara.charAt(i) == 'R');
-        // }
+        return "" + steps;
+    }
 
-        // String current = "AAA";
-        // int count = 0;
-        // while (!current.equals("ZZZ")) {
-        // boolean goRight = instructions.poll();
-        // instructions.add(goRight);
+    private Map<String, String[]> getNodes(List<String> lines) {
+        Map<String, String[]> nodes = new HashMap<>();
+        for (int row = 2; row < lines.size(); row++) {
+            String line = lines.get(row);
 
-        // current = nodes.get(current)[goRight ? 1 : 0];
+            String key = line.substring(0, 3);
+            String left = line.substring(7, 10);
+            String right = line.substring(12, 15);
 
-        // count++;
-        // }
+            nodes.put(key, new String[] { left, right });
+        }
+        return nodes;
+    }
 
-        return "";
+    private Queue<Boolean> getInstructions(String line) {
+        Queue<Boolean> instructions = new LinkedList<>();
+        for (int i = 0; i < line.length(); i++) {
+            instructions.add(line.charAt(i) == 'R');
+        }
+        return instructions;
     }
 
     /*
@@ -146,140 +154,45 @@ public class Day08 extends Day {
      */
     @Override
     public String solveSecondPart() {
+        Map<String, String[]> nodes = getNodes(LINES);
+        Queue<Boolean> instructions = getInstructions(LINES.get(0));
 
-        // parse
-        Map<String, String[]> nodes = new HashMap<>();
-        for (int row = 2; row < LINES.size(); row++) {
-            String line = LINES.get(row);
+        List<String> parallelPositions = getParallelPositions(nodes);
+        final int POSITIONS = parallelPositions.size();
 
-            String key = line.substring(0, 3);
-            String left = line.substring(7, 10);
-            String right = line.substring(12, 15);
+        Integer[] positions = new Integer[POSITIONS];
+        Arrays.fill(positions, 0);
 
-            nodes.put(key, new String[] { left, right });
-        }
+        int steps = 0;
+        int routesFound = 0;
+        while (routesFound < POSITIONS) {
+            steps++;
 
-        Queue<Boolean> instructions = new LinkedList<>();
-        String makkara = LINES.get(0);
-        for (int i = 0; i < makkara.length(); i++) {
-            instructions.add(makkara.charAt(i) == 'R');
-        }
-
-        final int A_AMOUNT = 6;
-        String[] currents = new String[A_AMOUNT];
-        int innin = 0;
-        for (String key : nodes.keySet()) {
-            if (key.charAt(2) == 'A') {
-                currents[innin++] = key;
-            }
-        }
-
-        for (String string : currents) {
-            System.out.println("__" + string);
-        }
-
-        long[] counts = new long[A_AMOUNT];
-        int count = 1;
-        int hmm = 0;
-        // int[] leastSteps = new int[A_AMOUNT];
-        while (hmm < A_AMOUNT) {
             boolean goRight = instructions.poll();
             instructions.add(goRight);
 
-            // String current = currents[indexx];
-            // currents[indexx] = nodes.get(current)[goRight ? 1 : 0];
+            for (int i = 0; i < POSITIONS; i++) {
+                String currentL = parallelPositions.get(i);
+                parallelPositions.set(i, nodes.get(currentL)[goRight ? 1 : 0]);
 
-            for (int i = 0; i < currents.length; i++) {
-                String current = currents[i];
-                currents[i] = nodes.get(current)[goRight ? 1 : 0];
-
-                if (counts[i] == 0 && currents[i].charAt(2) == 'Z') {
-                    System.out.println(i + ": " + count);
-                    counts[i] = count;
-                    hmm++;
+                if (positions[i] == 0 && parallelPositions.get(i).charAt(2) == 'Z') {
+                    routesFound++;
+                    positions[i] = steps;
                 }
             }
-
-            count++;
         }
 
-        long qwe = 0;
-        long[] newCounts = Arrays.copyOf(counts, A_AMOUNT);
-
-        System.out.println(newCounts[0] + ", " + counts[0]);
-        boolean firstT = true;
-        int idklol = 0;
-        while (!allAreSame(newCounts)) {
-            for (int i = 0; i < counts.length; i++) {
-                long largest = largest(newCounts);
-                while (newCounts[i] < largest) {
-                    newCounts[i] += counts[i];
-                    if(firstT) {
-                        // System.out.print("___ " + newCounts[0] + ", " + counts[0] + " ");
-                        // System.out.println("___ " + newCounts[1] + ", " + counts[1]);
-                    }
-                }
-            }
-            // newCounts[i] += counts[i];
-            if (idklol++ % 10000000 == 0) {
-                System.out.println(idklol);
-                for (int i = 0; i < newCounts.length; i++) {
-                    System.out.print("" + newCounts[i] + ", " + counts[i] + " | ");
-                }
-
-            }
-            // System.out.println("%s\t%s".formatted(currents[0], currents[1]));
-            // System.out.println("%s\t%s\t%s\t%s\t%s\t%s\t".formatted(counts[0],counts[1],counts[2],counts[3],counts[4],counts[5]));
-        }
-        qwe += newCounts[0];
-
-        return "" + qwe;
+        return "" + Maths.LCM(positions);
     }
 
-    private long largest(long[] counts) {
-        long largest = counts[0];
-        for (int i = 1; i < counts.length; i++) {
-            if (counts[i] > counts[i - 1]) {
-                largest = counts[i];
+    private List<String> getParallelPositions(Map<String, String[]> nodes) {
+        List<String> parallelPositions = new ArrayList<>();
+        for (String key : nodes.keySet()) {
+            if (key.charAt(2) == 'A') {
+                parallelPositions.add(key);
             }
         }
-        return largest;
-    }
-
-    private boolean isSmallest(long[] counts, long count) {
-        for (long l : counts) {
-            if (l < count) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean allAreSame(long[] counts) {
-        for (int i = 0; i < counts.length - 1; i++) {
-            if (counts[i] != counts[i + 1]) {
-                return false;
-            }
-        }
-        System.out.println("are same!");
-        return true;
-    }
-    /*
-     * 5359703852821160537
-     * 2110684337313830912
-     */
-
-    private boolean allZs(String[] currents) {
-        boolean result = true;
-
-        for (String string : currents) {
-            if (string.charAt(2) != 'Z') {
-                result = false;
-                break;
-            }
-        }
-
-        return result;
+        return parallelPositions;
     }
 
 }
