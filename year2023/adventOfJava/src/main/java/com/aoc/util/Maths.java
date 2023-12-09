@@ -4,6 +4,26 @@ import java.util.List;
 
 public class Maths {
 
+    @FunctionalInterface
+    interface Operand {
+        double apply(double value);
+    }
+
+    public static class MultiplierOperand implements Operand {
+        private int multiplier;
+    
+        public MultiplierOperand() {
+            this.multiplier = 1;
+        }
+    
+        @Override
+        public double apply(double value) {
+            double result = value * multiplier;
+            multiplier++;
+            return result;
+        }
+    }
+
     public static long GCD(long a, long b) {
         while (b != 0) {
             long temp = b;
@@ -59,5 +79,20 @@ public class Maths {
 
         return sum;
     }
+
+    public static <T extends Number> double sumList(List<T> list, Operand operand) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List is null or empty");
+        }
+
+        double sum = 0.0;
+        for (T element : list) {
+            sum += operand.apply(element.doubleValue());
+        }
+
+        return sum;
+    }
+
+    
 
 }
