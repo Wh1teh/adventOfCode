@@ -90,9 +90,21 @@ public class Day implements DayInterface {
 
         StringBuilder result = new StringBuilder();
 
-        result.append(solveFirstPart());
-        result.append("\n---\n");
-        result.append(solveSecondPart());
+        result.append("Part 1:\n");
+        try {
+            result.append(solveFirstPart());
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.append(e);
+        }
+        result.append("\n\nPart 2:\n");
+        try {
+            result.append(solveSecondPart());
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.append(e);
+        }
+        result.append("\n");
 
         return result.toString();
     }
