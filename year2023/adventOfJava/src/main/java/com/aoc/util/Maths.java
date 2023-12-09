@@ -1,5 +1,7 @@
 package com.aoc.util;
 
+import java.util.List;
+
 public class Maths {
 
     public static long GCD(long a, long b) {
@@ -30,6 +32,32 @@ public class Maths {
 
     private static long LCMofTwo(long a, long b) {
         return Math.abs(a * b) / GCD(a, b);
+    }
+
+    public static <T extends Number> double sumArray(T[] array) {
+        if (array == null || array.length == 0) {
+            throw new IllegalArgumentException("Array is null or empty");
+        }
+
+        double sum = 0.0;
+        for (T element : array) {
+            sum += element.doubleValue();
+        }
+
+        return sum;
+    }
+
+    public static <T extends Number> double sumList(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List is null or empty");
+        }
+
+        double sum = 0.0;
+        for (T element : list) {
+            sum += element.doubleValue();
+        }
+
+        return sum;
     }
 
 }

@@ -48,7 +48,4 @@ public class Parsers {
                 .collect(Collectors.toList());
     }
 
-    public static int sumIntList(List<Integer> list) {
-        return list.stream().mapToInt(Integer::intValue).sum();
-    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import com.aoc.util.Maths;
 import com.aoc.util.Parsers;
 
 public class Day09 extends Day {
@@ -149,7 +150,7 @@ public class Day09 extends Day {
             predictions.add(latest);
         }
 
-        return Parsers.sumIntList(predictions);
+        return (int) Maths.sumList(predictions);
     }
 
     private boolean allZeroes(List<Integer> history) {
