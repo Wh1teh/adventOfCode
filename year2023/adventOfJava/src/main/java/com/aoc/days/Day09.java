@@ -194,7 +194,7 @@ public class Day09 extends Day {
      */
     @Override
     public String solveSecondPart() {
-        return "" + +getPredictions(false);
+        return "" + getPredictions(false);
     }
 
 }
