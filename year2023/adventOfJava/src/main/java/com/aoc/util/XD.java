@@ -19,7 +19,7 @@ public class XD {
     public static String gray = "\u001B[1;30m";
 
     // colors without bold
-    public static String grayL = "\u001B[30m";
+    public static String grayL = "\u001B[90m";
 
     public static String style(Number num, String color) {
         return style(String.valueOf(num), color);
