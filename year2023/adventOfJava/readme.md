@@ -66,6 +66,6 @@ Change args depending on which answer you wish to see, or no args if you wish to
 
 > ![Picture of a terminal displaying average times of running each day and part of AoC 2023](./img/example_run.png)
 >
-> *Example run displaing average times it takes to complete each day and part*
+> *Example run displaying average times it takes to complete each day and part*
 
 
