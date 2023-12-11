@@ -4,8 +4,10 @@
 
 ### Requirements
 
-* Maven 3.6.3
-* JDK 20.0.2
+Tech | Version
+----- | --------
+Maven | 3.6.3
+JDK | 20.0.2
 
 > [!NOTE]
 > You might be able to get away with changing the build files as you prefer, these are just what I'm using.
