@@ -314,10 +314,14 @@ public class Day10 extends Day {
 
         boolean[][] grid = convertToBooleanGrid(graph.bfs(start), LINES);
 
-        // StringBuilder visualization = new StringBuilder();
+        Character aboveStart = nodes.get(new Coordinates(start.getYs() - 1, start.getXs()));
+        if(aboveStart == null || !CAN_DOWN.contains(aboveStart)) {
+            CAN_UP.remove('S');
+        }
 
         int count = 0;
         boolean isInside = false;
+        // StringBuilder visualization = new StringBuilder();
         for (int row = 0; row < grid.length; row++) {
             String line = LINES.get(row);
             for (int col = 0; col < grid[row].length; col++) {
@@ -326,8 +330,7 @@ public class Day10 extends Day {
 
                 if (!tile && isInside) {
                     count++;
-                } else if (CAN_UP.contains(pipe) && tile
-                /* && pipe != 'S' */ /* <- if S doesn't point up this has to be uncommented */) {
+                } else if (CAN_UP.contains(pipe) && tile) {
                     isInside = !isInside;
                 }
 
