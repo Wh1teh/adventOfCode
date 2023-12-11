@@ -1,5 +1,40 @@
 # AoC 2023 with Java
 
+## Solved Days
+
+<details>
+<summary>Table</summary>
+
+Day | 1 | 2
+----|---|---
+01  |	x	|	x
+02	|	x	|	x
+03	|	x	|	x
+04	|	x	|	x
+05	|		|	
+06	|	x	|	x
+07	|	x	|	x
+08	|	x	|	x
+09	|	x	|	x
+10	|	x	|	x
+11	|		|	
+12	|		|	
+13	|		|	
+14	|		|	
+15	|		|	
+16	|		|	
+17	|		|	
+18	|		|	
+19	|		|	
+20	|		|	
+21	|		|	
+22	|		|	
+23	|		|	
+24	|		|	
+25	|		|	
+
+</details>
+
 ## Build
 
 ### Requirements
