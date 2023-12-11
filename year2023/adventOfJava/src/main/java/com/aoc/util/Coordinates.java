@@ -1,10 +1,17 @@
 package com.aoc.util;
 
-public class Coordinates {
-    public final int yStart;
-    public final int xStart;
-    public final int yEnd;
-    public final int xEnd;
+public class Coordinates implements Comparable<Coordinates> {
+    public int yStart;
+    public int xStart;
+    public int yEnd;
+    public int xEnd;
+
+    public Coordinates(int yStart, int xStart) {
+        this.yStart = yStart;
+        this.yEnd = yStart;
+        this.xStart = xStart;
+        this.xEnd = xStart;
+    }
 
     public Coordinates(int yStart, int yEnd, int xStart, int xEnd) {
         this.yStart = yStart;
@@ -27,21 +34,43 @@ public class Coordinates {
         return true;
     }
 
+    public void setCoordinates(Coordinates newCoordinates) {
+        this.yStart = newCoordinates.getYs();
+        this.yEnd = newCoordinates.getYe();
+        this.xStart = newCoordinates.getXs();
+        this.xEnd = newCoordinates.getXe();
+    }
+
+    public void decXs() {
+        this.xStart--;
+    }
+
+    public void incXs() {
+        this.xStart++;
+    }
+
+    public void decYs() {
+        this.yStart--;
+    }
+
+    public void incYs() {
+        this.yStart++;
+    }
     // ------
 
-    public int getYStart() {
+    public int getYs() {
         return yStart;
     }
 
-    public int getXStart() {
+    public int getXs() {
         return xStart;
     }
 
-    public int getYEnd() {
+    public int getYe() {
         return yEnd;
     }
 
-    public int getXEnd() {
+    public int getXe() {
         return xEnd;
     }
 
@@ -74,4 +103,25 @@ public class Coordinates {
         return "{ys: %d, ye: %d, ".formatted(yStart, yEnd) +
                 "xs: %d, xe: %d}".formatted(xStart, xEnd);
     }
+
+    @Override
+    public int compareTo(Coordinates that) {
+        int result = Integer.compare(this.yStart, that.yStart);
+        if (result != 0) {
+            return result;
+        }
+
+        result = Integer.compare(this.xStart, that.xStart);
+        if (result != 0) {
+            return result;
+        }
+
+        result = Integer.compare(this.yEnd, that.yEnd);
+        if (result != 0) {
+            return result;
+        }
+
+        return Integer.compare(this.xEnd, that.xEnd);
+    }
+
 }
