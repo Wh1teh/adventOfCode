@@ -30,8 +30,8 @@ class DayTest {
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
             "11", // day01
             "31",
-            "", // day02
-            "",
+            "2", // day02
+            "4",
             "", // day03
             "",
             "", // day04

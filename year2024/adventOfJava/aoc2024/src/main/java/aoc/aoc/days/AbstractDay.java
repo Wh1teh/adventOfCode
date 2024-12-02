@@ -34,10 +34,25 @@ public abstract class AbstractDay implements Day {
         return part == 1 ? part1() : part2();
     }
 
-    protected abstract String sample1();
-    protected abstract String sample2();
-    protected abstract String part1();
-    protected abstract String part2();
+    protected String sample1() {
+        return part1Impl(readSample());
+    }
+
+    protected String sample2() {
+        return part2Impl(readSample());
+    }
+
+    protected String part1() {
+        return part1Impl(read());
+    }
+
+    protected String part2() {
+        return part2Impl(read());
+    }
+
+    protected abstract String part1Impl(String input);
+
+    protected abstract String part2Impl(String input);
 
     protected String readSample() {
         return read(0);

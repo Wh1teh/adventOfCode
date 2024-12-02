@@ -23,4 +23,14 @@ class Day42 extends AbstractDay {
     protected String part2() {
         return read();
     }
+
+    @Override
+    protected String part1Impl(String input) {
+        return "";
+    }
+
+    @Override
+    protected String part2Impl(String input) {
+        return "";
+    }
 }

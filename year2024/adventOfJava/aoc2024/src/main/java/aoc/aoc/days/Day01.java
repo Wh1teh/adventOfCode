@@ -8,9 +8,7 @@ import java.util.*;
 public class Day01 extends AbstractDay {
 
     @Override
-    protected String sample1() {
-        String input = readSample();
-
+    protected String part1Impl(String input) {
         var numbers = getNumbers(input.lines().toList());
         int distances = sumNumbers(getDistances(numbers.first(), numbers.second()));
 
@@ -18,30 +16,7 @@ public class Day01 extends AbstractDay {
     }
 
     @Override
-    protected String sample2() {
-        String input = readSample();
-
-        var numbers = getNumbers(input.lines().toList());
-        var similarityScores = getSimilarityScores(numbers.first().stream().toList(), numbers.second().stream().toList());
-        int sum = sumSimilarityScores(similarityScores);
-
-        return "" + sum;
-    }
-
-    @Override
-    protected String part1() {
-        String input = read();
-
-        var numbers = getNumbers(input.lines().toList());
-        int distances = sumNumbers(getDistances(numbers.first(), numbers.second()));
-
-        return "" + distances;
-    }
-
-    @Override
-    protected String part2() {
-        String input = read();
-
+    protected String part2Impl(String input) {
         var numbers = getNumbers(input.lines().toList());
         var similarityScores = getSimilarityScores(numbers.first().stream().toList(), numbers.second().stream().toList());
         int sum = sumSimilarityScores(similarityScores);
