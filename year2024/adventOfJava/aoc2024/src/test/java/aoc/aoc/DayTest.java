@@ -4,8 +4,16 @@ import aoc.aoc.days.Day;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 class DayTest {
 
@@ -19,14 +27,73 @@ class DayTest {
         assertTrue(day.part(2).contains("another test"));
     }
 
-    @Test
-    void day01_part1() {
-        testDay(1,1, "11");
+    private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
+            "11", // day01
+            "31",
+            "", // day02
+            "",
+            "", // day03
+            "",
+            "", // day04
+            "",
+            "", // day05
+            "",
+            "", // day06
+            "",
+            "", // day07
+            "",
+            "", // day08
+            "",
+            "", // day09
+            "",
+            "", // day10
+            "",
+            "", // day11
+            "",
+            "", // day12
+            "",
+            "", // day13
+            "",
+            "", // day14
+            "",
+            "", // day15
+            "",
+            "", // day16
+            "",
+            "", // day17
+            "",
+            "", // day18
+            "",
+            "", // day19
+            "",
+            "", // day20
+            "",
+            "", // day21
+            "",
+            "", // day22
+            "",
+            "", // day23
+            "",
+            "", // day24
+            "",
+            "", // day25
+            ""
+    ));
+
+    static Stream<Object[]> provideTestData() {
+        return IntStream.range(0, SAMPLE_ANSWERS.size())
+                .mapToObj(index -> new Object[]{
+                        index / 2 + 1, // Day
+                        index % 2 + 1, // Part
+                        SAMPLE_ANSWERS.get(index)
+                });
     }
 
-    @Test
-    void day01_part2() {
-        testDay(1,2, "31");
+    @ParameterizedTest(name = "Day {0} Part {1}")
+    @MethodSource("provideTestData")
+    void testDays(int day, int part, String sampleAnswer) {
+        assumeFalse(sampleAnswer.isBlank(), "Day not available");
+        testDay(day, part, sampleAnswer);
     }
 
     @SneakyThrows
@@ -39,7 +106,7 @@ class DayTest {
         assertNotNull(result);
         assertFalse(result.isBlank());
 
-        System.out.println(result);
+        System.out.printf("DAY %d PART %d RESULT:%n%s%n", dayNumber, part, result);
     }
 
     private static Day createDay(int dayNumber) throws Exception {
