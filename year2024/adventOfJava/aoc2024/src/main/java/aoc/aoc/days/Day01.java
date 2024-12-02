@@ -1,6 +1,6 @@
 package aoc.aoc.days;
 
-import aoc.aoc.days.util.Pair;
+import aoc.aoc.util.Pair;
 import lombok.AllArgsConstructor;
 
 import java.util.*;

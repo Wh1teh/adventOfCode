@@ -1,4 +1,4 @@
-package aoc.aoc.days.util;
+package aoc.aoc.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
