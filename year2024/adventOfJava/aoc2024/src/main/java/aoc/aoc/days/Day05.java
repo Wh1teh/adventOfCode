@@ -93,15 +93,13 @@ public class Day05 extends AbstractDay {
     private static String reorderUpdate(String update, Map<String, Set<String>> priorities) {
         var numbers = update.split((","));
 
-        var bst = new BinarySearchTree<PriorityNode>();
+        var bst = new TreeSet<PriorityNode>();
         for (String number : numbers) {
-            bst.insert(new PriorityNode(number, priorities.get(number)));
+            bst.add(new PriorityNode(number, priorities.get(number)));
         }
 
         var sb = new StringBuilder();
-        for (var a : bst.toList()) {
-            sb.append("%s,".formatted(a.value()));
-        }
+        bst.forEach(n -> sb.append("%s,".formatted(n.value())));
         sb.deleteCharAt(sb.length() - 1);
 
         return sb.toString();
