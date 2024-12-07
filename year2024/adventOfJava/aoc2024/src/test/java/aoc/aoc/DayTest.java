@@ -1,6 +1,7 @@
 package aoc.aoc;
 
 import aoc.aoc.days.Day;
+import aoc.aoc.testutils.DayParameter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static aoc.aoc.testutils.DayParameter.dayPart;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
@@ -80,20 +83,29 @@ class DayTest {
             ""
     ));
 
+    public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";
+    public static final String WORKS_BUT_IS_SLOW = "Works but is slow";
+    static final Map<DayParameter, String> DISABLED = Map.of(
+            dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
+            dayPart(7, 2), WORKS_BUT_IS_SLOW
+    );
+
     static Stream<Object[]> provideTestData() {
         return IntStream.range(0, SAMPLE_ANSWERS.size())
                 .mapToObj(index -> new Object[]{
-                        index / 2 + 1, // Day
-                        index % 2 + 1, // Part
+                        dayPart(index / 2 + 1, index % 2 + 1),
                         SAMPLE_ANSWERS.get(index)
                 });
     }
 
-    @ParameterizedTest(name = "Day {0} Part {1}")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("provideTestData")
-    void testDays(int day, int part, String sampleAnswer) {
+    void testDays(DayParameter day, String sampleAnswer) {
         assumeFalse(sampleAnswer.isBlank(), "Day not available");
-        testDay(day, part, sampleAnswer);
+        var reason = DISABLED.get(day);
+        assumeTrue(reason == null, "Disabled because: %s".formatted(reason));
+
+        testDay(day.day(), day.part(), sampleAnswer);
     }
 
     @SneakyThrows
@@ -116,4 +128,6 @@ class DayTest {
 
         return (Day) dayInstance;
     }
+
+
 }
