@@ -40,10 +40,12 @@ public class Day07 extends AbstractDay {
     }
 
     private static boolean isPossibleRecursive(Stack<Long> numbers, long target, boolean part2) {
-        if (numbers.size() == 1) {
+        if (numbers.size() == 1)
             return numbers.getFirst() == target;
-        } else
-            return attemptOperators(numbers,target,part2);
+        else if (numbers.peek() > target)
+            return false;
+        else
+            return attemptOperators(numbers, target, part2);
     }
 
     private static boolean attemptOperators(Stack<Long> numbers, long target, boolean part2) {
@@ -96,5 +98,4 @@ public class Day07 extends AbstractDay {
             );
         }
     }
-
 }
