@@ -84,10 +84,8 @@ class DayTest {
     ));
 
     public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";
-    public static final String WORKS_BUT_IS_SLOW = "Works but is slow";
     static final Map<DayParameter, String> DISABLED = Map.of(
             dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT
-            , dayPart(7, 2), WORKS_BUT_IS_SLOW
     );
 
     static Stream<Object[]> provideTestData() {
@@ -128,6 +126,4 @@ class DayTest {
 
         return (Day) dayInstance;
     }
-
-
 }

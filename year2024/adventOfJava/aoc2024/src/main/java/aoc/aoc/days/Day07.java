@@ -1,6 +1,9 @@
 package aoc.aoc.days;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static aoc.aoc.util.Utils.withExecutorService;
 
 public class Day07 extends AbstractDay {
 
@@ -15,28 +18,28 @@ public class Day07 extends AbstractDay {
     }
 
     private static long solve(String input, boolean part2) {
-        long sum = 0;
+        final var sum = new AtomicLong(0);
 
         var calibrations = input.lines().map(Calibration::new).toList();
-        for (var calibration : calibrations) {
-            if (isPossible(calibration, part2))
-                sum += calibration.result;
-        }
+        withExecutorService(e -> {
+            for (var calibration : calibrations) {
+                e.submit(() -> {
+                    if (isPossible(calibration, part2))
+                        sum.addAndGet(calibration.result);
+                });
+            }
+        });
 
-        return sum;
+        return sum.get();
     }
 
     private static boolean isPossible(Calibration calibration, boolean part2) {
         var numbers = calibration.numbers;
-        for (int iteration = 1; iteration < numbers.size(); iteration++) {
-            if (isPossibleRecursive(
-                    numbers.reversed().stream().collect(Stack::new, Stack::push, Stack::addAll),
-                    calibration.result,
-                    part2
-            )) return true;
-        }
-
-        return false;
+        return isPossibleRecursive(
+                numbers.reversed().stream().collect(Stack::new, Stack::push, Stack::addAll),
+                calibration.result,
+                part2
+        );
     }
 
     private static boolean isPossibleRecursive(Stack<Long> numbers, long target, boolean part2) {
