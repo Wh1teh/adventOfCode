@@ -1,36 +1,42 @@
 package aoc.aoc.days;
 
+import aoc.aoc.solver.AbstractSolver;
 import lombok.RequiredArgsConstructor;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static aoc.aoc.days.Part.PART_2;
 import static aoc.aoc.util.Utils.isEven;
 
 public class Day09 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return "" + calculateChecksum(input);
+        return "" + calculateChecksum1(input);
     }
 
     @Override
     protected String part2Impl(String input) {
-        return "" + calculateChecksum2(input);
+        return "" + new Disk(toIntArray(input))
+                .with(PART_2)
+                .defragment()
+                .calculateChecksum();
     }
 
     private static int[] toIntArray(String input) {
         return input.strip().chars().map(c -> c - '0').toArray();
     }
 
-    private static int calculateChecksum(String input) {
-        var disk = buildDisk(toIntArray(input));
+    private static int calculateChecksum1(String input) {
+        var disk = buildDisk1(toIntArray(input));
 
         defragPart1(disk);
 
         return getChecksum1(disk);
     }
 
-    private static ArrayList<Integer> buildDisk(int[] numbers) {
+    private static ArrayList<Integer> buildDisk1(int[] numbers) {
         var disk = new ArrayList<Integer>();
 
         for (int i = 0; i < numbers.length; i++) {
@@ -68,82 +74,74 @@ public class Day09 extends AbstractDay {
         return checksum;
     }
 
-    private static long calculateChecksum2(String input) {
-        var disk = buildDisk2(toIntArray(input));
-        return getChecksum2(defragPart2(disk));
-    }
+    private static class Disk extends AbstractSolver<Disk> {
 
-    private static Disk buildDisk2(int[] array) {
-        var numbers = new ArrayList<Span>();
-        var emptys = new ArrayList<Span>();
+        private final List<Span> numbers = new ArrayList<>();
+        private final List<Span> emptys = new ArrayList<>();
 
-        for (int i = 0; i < array.length; i++) {
-            int size = array[i];
-            int id = i / 2;
-            if (isEven(i))
-                numbers.add(new NumberSpan(id, size));
-            else
-                emptys.add(new EmptySpan(size));
+        public Disk(int[] array) {
+            initDisk(array);
         }
 
-        return new Disk(numbers, emptys);
-    }
+        public Disk defragment() {
+            var lastOccurrence = new HashMap<Integer, Integer>();
+            for (int index = numbers.size() - 1; index >= 0; index--) {
+                if (part == PART_2)
+                    moveChunkFromRightToEmpty(index, lastOccurrence);
+            }
 
-    private static List<Span> defragPart2(Disk disk) {
-        return collectToOneSpan(
-                moveFromRightToEmpty(disk)
-        );
-    }
+            return this;
+        }
 
-    private static Disk moveFromRightToEmpty(Disk disk) {
-        var numbers = disk.numbers;
-        for (int index = numbers.size() - 1; index >= 0; index--) {
+        public long calculateChecksum() {
+            long checksum = 0;
+
+            var index = new AtomicInteger();
+            for (int i = 0; i < numbers.size(); i++) {
+                checksum += calculateChecksumForSpan(numbers.get(i), index);
+                if (i < emptys.size())
+                    checksum += calculateChecksumForSpan(emptys.get(i), index);
+            }
+
+            return checksum;
+        }
+
+        private void initDisk(int[] array) {
+            for (int i = 0; i < array.length; i++) {
+                int size = array[i];
+                int id = i / 2;
+                if (isEven(i))
+                    numbers.add(new NumberSpan(id, size));
+                else
+                    emptys.add(new EmptySpan(size));
+            }
+        }
+
+        private long calculateChecksumForSpan(Span span, AtomicInteger index) {
+            long checksum = 0;
+
+            while (span.hasNext()) {
+                var next = span.next();
+                checksum += (long) next * index.getAndIncrement();
+            }
+
+            return checksum;
+        }
+
+        private void moveChunkFromRightToEmpty(int index, HashMap<Integer, Integer> lastOccurrence) {
             var numberSpan = numbers.get(index);
-            for (int left = 0; left < index; left++) {
-                var emptySpan = disk.emptys().get(left);
+            int neededSize = numberSpan.size();
+
+            for (int left = lastOccurrence.getOrDefault(neededSize, 0); left < index; left++) {
+                var emptySpan = emptys.get(left);
 
                 if (emptySpan.addIfPossible(numberSpan)) {
-                    numbers.set(index, new EmptySpan(numberSpan.size()));
+                    lastOccurrence.put(neededSize, left);
+                    numbers.set(index, new EmptySpan(neededSize));
                     break;
                 }
             }
         }
-
-        return disk;
-    }
-
-    private static ArrayList<Span> collectToOneSpan(Disk disk) {
-        var defrag = new ArrayList<Span>();
-
-        var numbers = disk.numbers();
-        var emptys = disk.emptys();
-        for (int i = 0; i < numbers.size(); i++) {
-            if (numbers.get(i) == null)
-                continue;
-
-            defrag.add(numbers.get(i));
-            if (i < emptys.size())
-                defrag.add(emptys.get(i));
-        }
-
-        return defrag;
-    }
-
-    private static long getChecksum2(List<Span> disk) {
-        long checksum = 0;
-
-        int index = 0;
-        for (var span : disk) {
-            while (span.hasNext()) {
-                var next = span.next();
-                checksum += (long) next * index++;
-            }
-        }
-
-        return checksum;
-    }
-
-    private record Disk(List<Span> numbers, List<Span> emptys) {
     }
 
     private interface Span {
