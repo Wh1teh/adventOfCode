@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static aoc.aoc.days.Part.PART_1;
 import static aoc.aoc.days.Part.PART_2;
 import static aoc.aoc.util.Utils.isEven;
 
@@ -13,7 +14,10 @@ public class Day09 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return "" + calculateChecksum1(input);
+        return "" + new Disk(toIntArray(input))
+                .with(PART_1)
+                .defragment()
+                .calculateChecksum();
     }
 
     @Override
@@ -28,52 +32,6 @@ public class Day09 extends AbstractDay {
         return input.strip().chars().map(c -> c - '0').toArray();
     }
 
-    private static int calculateChecksum1(String input) {
-        var disk = buildDisk1(toIntArray(input));
-
-        defragPart1(disk);
-
-        return getChecksum1(disk);
-    }
-
-    private static ArrayList<Integer> buildDisk1(int[] numbers) {
-        var disk = new ArrayList<Integer>();
-
-        for (int i = 0; i < numbers.length; i++) {
-            int n = numbers[i];
-            int id = i / 2;
-            for (int spaceNeeded = 0; spaceNeeded < n; spaceNeeded++) {
-                disk.add(isEven(i) ? id : null);
-            }
-        }
-
-        return disk;
-    }
-
-    private static void defragPart1(List<Integer> disk) {
-        int right = disk.size() - 1;
-        int left = 0;
-        while (left < right) {
-            if (disk.get(left) == null) {
-                while (disk.get(right) == null) {
-                    right--;
-                }
-                Collections.swap(disk, left, right);
-            }
-            left++;
-        }
-    }
-
-    private static int getChecksum1(List<Integer> disk) {
-        int checksum = 0;
-
-        for (int i = 0; i < disk.size(); i++) {
-            checksum += disk.get(i) == null ? 0 : disk.get(i) * i;
-        }
-
-        return checksum;
-    }
-
     private static class Disk extends AbstractSolver<Disk> {
 
         private final List<Span> numbers = new ArrayList<>();
@@ -83,14 +41,15 @@ public class Day09 extends AbstractDay {
             initDisk(array);
         }
 
-        public Disk defragment() {
-            var lastOccurrence = new HashMap<Integer, Integer>();
-            for (int index = numbers.size() - 1; index >= 0; index--) {
-                if (part == PART_2)
-                    moveChunkFromRightToEmpty(index, lastOccurrence);
+        private void initDisk(int[] array) {
+            for (int i = 0; i < array.length; i++) {
+                int size = array[i];
+                int id = i / 2;
+                if (isEven(i))
+                    numbers.add(new NumberSpan(id, size));
+                else
+                    emptys.add(new EmptySpan(size));
             }
-
-            return this;
         }
 
         public long calculateChecksum() {
@@ -106,17 +65,6 @@ public class Day09 extends AbstractDay {
             return checksum;
         }
 
-        private void initDisk(int[] array) {
-            for (int i = 0; i < array.length; i++) {
-                int size = array[i];
-                int id = i / 2;
-                if (isEven(i))
-                    numbers.add(new NumberSpan(id, size));
-                else
-                    emptys.add(new EmptySpan(size));
-            }
-        }
-
         private long calculateChecksumForSpan(Span span, AtomicInteger index) {
             long checksum = 0;
 
@@ -126,6 +74,29 @@ public class Day09 extends AbstractDay {
             }
 
             return checksum;
+        }
+
+        public Disk defragment() {
+            var lastOccurrence = new HashMap<Integer, Integer>();
+            for (int index = numbers.size() - 1; index >= 0; index--) {
+                if (part == PART_2)
+                    moveChunkFromRightToEmpty(index, lastOccurrence);
+                else
+                    moveNumbersFromRightToEmpty(index, lastOccurrence);
+            }
+
+            return this;
+        }
+
+        private void moveNumbersFromRightToEmpty(int index, HashMap<Integer, Integer> lastOccurrence) {
+            var numberSpan = numbers.get(index);
+
+            int left = lastOccurrence.getOrDefault(1, 0);
+            while (left < index && numberSpan.hasNext()) {
+                emptys.get(left++).addAsMuchAsPossible(numberSpan);
+            }
+
+            lastOccurrence.put(1, left - 1);
         }
 
         private void moveChunkFromRightToEmpty(int index, HashMap<Integer, Integer> lastOccurrence) {
@@ -152,7 +123,12 @@ public class Day09 extends AbstractDay {
 
         int next();
 
-        boolean addIfPossible(Span span);
+        default boolean addIfPossible(Span span) {
+            return false;
+        }
+
+        default void addAsMuchAsPossible(Span span) {
+        }
     }
 
     private static class NumberSpan implements Span {
@@ -182,18 +158,13 @@ public class Day09 extends AbstractDay {
             index++;
             return number;
         }
-
-        @Override
-        public boolean addIfPossible(Span span) {
-            return false;
-        }
     }
 
     @RequiredArgsConstructor
     private static class EmptySpan implements Span {
 
         private final int[] numbers;
-        private int traverlsalIndex = 0;
+        private int traversalIndex = 0;
         private int additionIndex = 0;
 
         public EmptySpan(int size) {
@@ -207,14 +178,15 @@ public class Day09 extends AbstractDay {
 
         @Override
         public boolean hasNext() {
-            return traverlsalIndex < numbers.length;
+            return traversalIndex < numbers.length;
         }
 
         @Override
         public int next() {
-            return numbers[traverlsalIndex++];
+            return numbers[traversalIndex++];
         }
 
+        @Override
         public boolean addIfPossible(Span numberSpan) {
             if (numberSpan.size() > size())
                 return false;
@@ -224,6 +196,13 @@ public class Day09 extends AbstractDay {
             }
 
             return true;
+        }
+
+        @Override
+        public void addAsMuchAsPossible(Span numberSpan) {
+            while (numberSpan.hasNext() && size() != 0) {
+                numbers[additionIndex++] = numberSpan.next();
+            }
         }
     }
 }
