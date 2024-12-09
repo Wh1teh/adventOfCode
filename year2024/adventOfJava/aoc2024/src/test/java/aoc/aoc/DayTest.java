@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +50,8 @@ class DayTest {
             "11387",
             "14", // day08
             "34",
-            "", // day09
-            "",
+            "1928", // day09
+            "2858",
             "", // day10
             "",
             "", // day11
@@ -109,9 +112,12 @@ class DayTest {
     @SneakyThrows
     private static void testDay(int dayNumber, int part, String sampleAnswer) {
         Day day = createDay(dayNumber);
+
         assertEquals(sampleAnswer, day.sample(part));
+        writeDebug(dayNumber, part, true, day);
 
         String result = day.part(part);
+        writeDebug(dayNumber, part, false, day);
 
         assertNotNull(result);
         assertFalse(result.isBlank());
@@ -125,5 +131,29 @@ class DayTest {
         Object dayInstance = dayClass.getDeclaredConstructor().newInstance();
 
         return (Day) dayInstance;
+    }
+
+    @SneakyThrows
+    private static void writeDebug(int dayNumber, int part, boolean isSample, Day day) {
+        String debugString = day.debugString();
+        if (debugString.isBlank())
+            return;
+        day.clearDebug();
+
+        String debugDir = "target/debug";
+        String fileName = debugDir + "/day%02d_part%d_%s".formatted(dayNumber, part, isSample ? "sample" : "actual");
+
+        File file = new File(fileName);
+
+        File parentDir = file.getParentFile();
+        if (!parentDir.exists() && !parentDir.mkdirs()) {
+            System.err.println("Failed to create directories: " + parentDir);
+            return;
+        }
+
+        try (var writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write(debugString);
+            System.out.println("Debug file written to: " + file.getAbsolutePath());
+        }
     }
 }

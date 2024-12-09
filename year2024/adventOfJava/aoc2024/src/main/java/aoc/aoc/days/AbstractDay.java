@@ -9,6 +9,7 @@ import java.util.Objects;
 
 public abstract class AbstractDay implements Day {
 
+    private static final StringBuilder DEBUG_STRING = new StringBuilder();
     private final String dayOrdinal;
 
     protected AbstractDay() {
@@ -32,6 +33,20 @@ public abstract class AbstractDay implements Day {
         }
 
         return part == 1 ? part1() : part2();
+    }
+
+    @Override
+    public String debugString() {
+        return DEBUG_STRING.toString();
+    }
+
+    @Override
+    public void clearDebug() {
+        DEBUG_STRING.setLength(0);
+    }
+
+    protected static void appendDebug(String str) {
+        DEBUG_STRING.append(str);
     }
 
     protected String sample1() {

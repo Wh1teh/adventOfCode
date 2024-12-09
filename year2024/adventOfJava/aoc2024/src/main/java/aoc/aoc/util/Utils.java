@@ -26,4 +26,8 @@ public class Utils {
             function.accept(executor);
         }
     }
+
+    public static boolean isEven(int number) {
+        return (number & 1) == 0;
+    }
 }
