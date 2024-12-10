@@ -2,10 +2,10 @@ package aoc.aoc.days;
 
 import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Coordinate;
+import aoc.aoc.util.StringMatrix;
 import lombok.RequiredArgsConstructor;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -13,19 +13,20 @@ import java.util.function.Predicate;
 
 import static aoc.aoc.days.Part.PART_1;
 import static aoc.aoc.days.Part.PART_2;
+import static aoc.aoc.util.StringMatrix.matrix;
 
 public class Day10 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return "" + new TrailCounter(input.lines().toList())
+        return "" + new TrailCounter(matrix(input))
                 .with(PART_1)
                 .calculateTrailScores();
     }
 
     @Override
     protected String part2Impl(String input) {
-        return "" + new TrailCounter(input.lines().toList())
+        return "" + new TrailCounter(matrix(input))
                 .with(PART_2)
                 .calculateTrailScores();
     }
@@ -36,24 +37,21 @@ public class Day10 extends AbstractDay {
         public static final char TRAIL_START = '0';
         public static final char TRAIL_END = '9';
 
-        private final List<String> matrix;
+        private final StringMatrix matrix;
 
         public int calculateTrailScores() {
-            int trailScores = 0;
+            AtomicInteger trailScores = new AtomicInteger();
 
-            for (int y = 0; y < matrix.size(); y++) {
-                for (int x = 0; x < matrix.size(); x++) {
-                    if (matrix.get(y).charAt(x) == TRAIL_START) {
-                        trailScores += switch (part) {
-                            case PART_1 -> countTrailEnds(new Coordinate(y, x));
-                            case PART_2 -> countTrailPaths(new Coordinate(y, x));
-                        };
-                    }
-
+            matrix.iterate((ch, y, x) -> {
+                if (ch == TRAIL_START) {
+                    trailScores.getAndAdd(switch (part) {
+                        case PART_1 -> countTrailEnds(new Coordinate(y, x));
+                        case PART_2 -> countTrailPaths(new Coordinate(y, x));
+                    });
                 }
-            }
+            });
 
-            return trailScores;
+            return trailScores.get();
         }
 
         private int countTrailPaths(Coordinate posisition) {
@@ -61,7 +59,7 @@ public class Day10 extends AbstractDay {
         }
 
         private int countTrailPaths(Coordinate position, AtomicInteger score) {
-            char currentNumber = matrix.get(position.y()).charAt(position.x());
+            char currentNumber = matrix.get(position);
             applyAdjacent(
                     position,
                     nextNumber -> {
@@ -82,12 +80,12 @@ public class Day10 extends AbstractDay {
         }
 
         private int countTrailEnds(Coordinate position, Set<Coordinate> trailEnds) {
-            char currentNumber = matrix.get(position.y()).charAt(position.x());
+            char currentNumber = matrix.get(position);
             applyAdjacent(
                     position,
                     nextNumber -> currentNumber - nextNumber == -1,
                     nextPosition -> {
-                        if (matrix.get(nextPosition.y()).charAt(nextPosition.x()) == TRAIL_END)
+                        if (matrix.get(nextPosition) == TRAIL_END)
                             trailEnds.add(nextPosition);
                         else
                             countTrailEnds(nextPosition, trailEnds);
@@ -108,7 +106,7 @@ public class Day10 extends AbstractDay {
             if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
                 return;
 
-            char ch = matrix.get(y).charAt(x);
+            char ch = matrix.get(y, x);
             if (predicate.test(ch))
                 action.accept(new Coordinate(y, x));
         }
