@@ -2,7 +2,7 @@ package aoc.aoc.util;
 
 import java.util.*;
 
-public class Graph <T> {
+public class Graph<T> {
 
     private final Map<T, List<T>> adjList = new HashMap<>();
 
@@ -45,6 +45,33 @@ public class Graph <T> {
 
         recursionStack.remove(current);
         return false;
+    }
+
+    public Set<T> allReachableFrom(T start) {
+        return bfs(start);
+    }
+
+    private Set<T> bfs(T start) {
+        Set<T> visited = new HashSet<>();
+        Queue<T> queue = new LinkedList<>();
+        Set<T> reachableVertices = new HashSet<>();
+
+        queue.add(start);
+        visited.add(start);
+        reachableVertices.add(start);
+
+        while (!queue.isEmpty()) {
+            T current = queue.poll();
+            for (T neighbor : adjList.getOrDefault(current, new ArrayList<>())) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                    reachableVertices.add(neighbor);
+                }
+            }
+        }
+
+        return reachableVertices;
     }
 
     public void printGraph() {

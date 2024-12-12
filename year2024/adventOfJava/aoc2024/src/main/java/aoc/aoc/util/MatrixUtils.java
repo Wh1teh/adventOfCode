@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MatrixUtils {
@@ -44,5 +46,62 @@ public class MatrixUtils {
     public static boolean notWithinMatrix(Coordinate position, List<String> matrix) {
         return position.y() < 0 || position.y() >= matrix.size()
                 || position.x() < 0 || position.x() >= matrix.getFirst().length();
+    }
+
+    public static <T> void applyAdjacent(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action
+    ) {
+        applyTo(matrix, position.y() - 1, position.x(), predicate, action);
+        applyTo(matrix, position.y(), position.x() - 1, predicate, action);
+        applyTo(matrix, position.y() + 1, position.x(), predicate, action);
+        applyTo(matrix, position.y(), position.x() + 1, predicate, action);
+    }
+
+    private static <T> void applyTo(
+            Matrix<T> matrix, int y, int x,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action
+    ) {
+        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
+            return;
+
+        T ch = matrix.get(y, x);
+        if (predicate.test(ch))
+            action.accept(new Coordinate(y, x));
+    }
+
+    public static <T> void applyAdjacentIncludeOutOfBounds(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action
+    ) {
+        applyAdjacentIncludeOutOfBounds(matrix, position, predicate, action, action);
+    }
+
+    public static <T> void applyAdjacentIncludeOutOfBounds(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action, Consumer<Coordinate> outOfBoundsFallback
+    ) {
+        applyToIncludeOutOfBounds(matrix, position.y() - 1, position.x(), predicate, action, outOfBoundsFallback);
+        applyToIncludeOutOfBounds(matrix, position.y(), position.x() - 1, predicate, action, outOfBoundsFallback);
+        applyToIncludeOutOfBounds(matrix, position.y() + 1, position.x(), predicate, action, outOfBoundsFallback);
+        applyToIncludeOutOfBounds(matrix, position.y(), position.x() + 1, predicate, action, outOfBoundsFallback);
+    }
+
+    private static <T> void applyToIncludeOutOfBounds(
+            Matrix<T> matrix, int y, int x,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action, Consumer<Coordinate> outOfBoundsFallback) {
+        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size()) {
+            outOfBoundsFallback.accept(new Coordinate(y, x));
+            return;
+        }
+
+        T ch = matrix.get(y, x);
+        if (predicate.test(ch))
+            action.accept(new Coordinate(y, x));
     }
 }
