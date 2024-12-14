@@ -1,5 +1,6 @@
 package aoc.aoc.days;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.nio.file.Files;
@@ -11,6 +12,9 @@ public abstract class AbstractDay implements Day {
 
     private static final StringBuilder DEBUG_STRING = new StringBuilder();
     private final String dayOrdinal;
+
+    @Setter
+    protected Part part;
 
     protected AbstractDay() {
         String className = this.getClass().getSimpleName();
