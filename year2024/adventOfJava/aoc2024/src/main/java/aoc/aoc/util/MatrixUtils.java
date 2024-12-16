@@ -43,9 +43,26 @@ public class MatrixUtils {
         return !notWithinMatrix(position, matrix);
     }
 
+    public static <T> boolean isWithinMatrix(Coordinate position, Matrix<T> matrix) {
+        return !notWithinMatrix(position, matrix);
+    }
+
+    public static <T> boolean isWithinMatrix(int y, int x, Matrix<T> matrix) {
+        return !notWithinMatrix(y, x, matrix);
+    }
+
     public static boolean notWithinMatrix(Coordinate position, List<String> matrix) {
         return position.y() < 0 || position.y() >= matrix.size()
                 || position.x() < 0 || position.x() >= matrix.getFirst().length();
+    }
+
+    public static <T> boolean notWithinMatrix(Coordinate position, Matrix<T> matrix) {
+        return notWithinMatrix(position.y(), position.x(), matrix);
+    }
+
+    public static <T> boolean notWithinMatrix(int y, int x, Matrix<T> matrix) {
+        return y < 0 || y >= matrix.size()
+                || x < 0 || x >= matrix.size();
     }
 
     public static <T> void applyAdjacent(
@@ -103,5 +120,48 @@ public class MatrixUtils {
         T ch = matrix.get(y, x);
         if (predicate.test(ch))
             action.accept(new Coordinate(y, x));
+    }
+
+    public static <T> T rightOf(Matrix<T> matrix, Coordinate position) {
+        return notWithinMatrix(position.y(), position.x() + 1, matrix) ? null
+                : matrix.get(position.y(), position.x() + 1);
+    }
+
+    public static <T> T leftOf(Matrix<T> matrix, Coordinate position) {
+        return notWithinMatrix(position.y(), position.x() - 1, matrix) ? null
+                : matrix.get(position.y(), position.x() - 1);
+    }
+
+    public static <T> T aboveOf(Matrix<T> matrix, Coordinate position) {
+        return notWithinMatrix(position.y() - 1, position.x(), matrix) ? null
+                : matrix.get(position.y() - 1, position.x());
+    }
+
+    public static <T> T belowOf(Matrix<T> matrix, Coordinate position) {
+        return notWithinMatrix(position.y() + 1, position.x(), matrix) ? null
+                : matrix.get(position.y() + 1, position.x());
+    }
+
+    public static Coordinate nextPosition(Coordinate position, Direction direction) {
+        int y = position.y();
+        int x = position.x();
+        return switch (direction) {
+            case UP -> new Coordinate(y - 1, x);
+            case RIGHT -> new Coordinate(y, x + 1);
+            case DOWN -> new Coordinate(y + 1, x);
+            case LEFT -> new Coordinate(y, x - 1);
+        };
+    }
+
+    public static Direction directionOf(Coordinate position, Coordinate of) {
+        if (position.x() < of.x())
+            return Direction.RIGHT;
+        if (position.x() > of.x())
+            return  Direction.LEFT;
+        if (position.y() < of.y())
+            return Direction.DOWN;
+        if (position.y() > of.y())
+            return Direction.UP;
+        return null;
     }
 }
