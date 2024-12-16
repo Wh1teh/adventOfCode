@@ -1,10 +1,31 @@
 package aoc.aoc.util;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class Graph<T> {
 
-    private final Map<T, List<T>> adjList = new HashMap<>();
+    private final Map<T, List<Edge<T>>> adjList = new HashMap<>();
+
+    public static class Edge<T> {
+        T destination;
+        Number weight;
+
+        public Edge(T destination, Number weight) {
+            this.destination = destination;
+            this.weight = weight;
+        }
+    }
+
+    private static class Node<T> {
+        T vertex;
+        double distance;
+
+        Node(T vertex, double distance) {
+            this.vertex = vertex;
+            this.distance = distance;
+        }
+    }
 
     public void addVertex(T vertex) {
         adjList.putIfAbsent(vertex, new ArrayList<>());
@@ -13,7 +34,55 @@ public class Graph<T> {
     public void addEdge(T source, T destination) {
         adjList.putIfAbsent(source, new ArrayList<>());
         adjList.putIfAbsent(destination, new ArrayList<>());
-        adjList.get(source).add(destination);
+        adjList.get(source).add(new Edge<>(destination, Integer.MIN_VALUE));
+    }
+
+    public void addEdge(T source, T destination, int weight) {
+        adjList.putIfAbsent(source, new ArrayList<>());
+        adjList.putIfAbsent(destination, new ArrayList<>());
+        adjList.get(source).add(new Edge<>(destination, weight));
+    }
+
+    public List<T> dijkstra(T start, Predicate<T> endCondition) {
+        Map<T, Double> distances = new HashMap<>();
+        Map<T, T> previousNodes = new HashMap<>();
+        PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(node -> node.distance));
+
+        for (T node : adjList.keySet()) {
+            distances.put(node, Double.POSITIVE_INFINITY);
+            previousNodes.put(node, null);
+        }
+        distances.put(start, 0.0);
+        priorityQueue.add(new Node<>(start, 0.0));
+
+        while (!priorityQueue.isEmpty()) {
+            Node<T> currentNode = priorityQueue.poll();
+            T current = currentNode.vertex;
+
+            if (endCondition.test(current)) {
+                return constructPath(previousNodes, current);
+            }
+
+            for (Edge<T> edge : adjList.getOrDefault(current, new ArrayList<>())) {
+                double newDist = distances.get(current) + edge.weight.doubleValue();
+                if (newDist < distances.get(edge.destination)) {
+                    distances.put(edge.destination, newDist);
+                    previousNodes.put(edge.destination, current);
+                    priorityQueue.add(new Node<>(edge.destination, newDist));
+                }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<T> constructPath(Map<T, T> previousNodes, T endNode) {
+        List<T> path = new LinkedList<>();
+        for (T at = endNode; at != null; at = previousNodes.get(at)) {
+            path.add(at);
+        }
+        Collections.reverse(path);
+        return path;
     }
 
     public int countCycles() {
@@ -33,12 +102,13 @@ public class Graph<T> {
         visited.add(current);
         recursionStack.add(current);
 
-        for (T neighbor : adjList.get(current)) {
-            if (!visited.contains(neighbor)) {
-                if (dfs(neighbor, visited, recursionStack)) {
+        for (Edge<T> neighbor : adjList.get(current)) {
+            var destination = neighbor.destination;
+            if (!visited.contains(destination)) {
+                if (dfs(destination, visited, recursionStack)) {
                     return true;
                 }
-            } else if (recursionStack.contains(neighbor)) {
+            } else if (recursionStack.contains(destination)) {
                 return true;
             }
         }
@@ -62,11 +132,12 @@ public class Graph<T> {
 
         while (!queue.isEmpty()) {
             T current = queue.poll();
-            for (T neighbor : adjList.getOrDefault(current, new ArrayList<>())) {
-                if (!visited.contains(neighbor)) {
-                    visited.add(neighbor);
-                    queue.add(neighbor);
-                    reachableVertices.add(neighbor);
+            for (Edge<T> neighbor : adjList.getOrDefault(current, new ArrayList<>())) {
+                var destination = neighbor.destination;
+                if (!visited.contains(destination)) {
+                    visited.add(destination);
+                    queue.add(destination);
+                    reachableVertices.add(destination);
                 }
             }
         }

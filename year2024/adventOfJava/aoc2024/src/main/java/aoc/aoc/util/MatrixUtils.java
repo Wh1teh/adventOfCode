@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -89,6 +91,31 @@ public class MatrixUtils {
             action.accept(new Coordinate(y, x));
     }
 
+    public static <T> void applyAdjacent(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            BiConsumer<Coordinate, Direction> action
+    ) {
+        applyTo(matrix, position.y() - 1, position.x(), predicate, action, Direction.UP);
+        applyTo(matrix, position.y(), position.x() - 1, predicate, action, Direction.LEFT);
+        applyTo(matrix, position.y() + 1, position.x(), predicate, action, Direction.DOWN);
+        applyTo(matrix, position.y(), position.x() + 1, predicate, action, Direction.RIGHT);
+    }
+
+    private static <T> void applyTo(
+            Matrix<T> matrix, int y, int x,
+            Predicate<T> predicate,
+            BiConsumer<Coordinate, Direction> action,
+            Direction direction
+    ) {
+        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
+            return;
+
+        T ch = matrix.get(y, x);
+        if (predicate.test(ch))
+            action.accept(new Coordinate(y, x), direction);
+    }
+
     public static <T> void applyAdjacentIncludeOutOfBounds(
             Matrix<T> matrix, Coordinate position,
             Predicate<T> predicate,
@@ -120,6 +147,12 @@ public class MatrixUtils {
         T ch = matrix.get(y, x);
         if (predicate.test(ch))
             action.accept(new Coordinate(y, x));
+    }
+
+    public static <T> int countAdjacent(Matrix<T> matrix, Coordinate position, Predicate<T> predicate) {
+        var atomic = new AtomicInteger(0);
+        MatrixUtils.applyAdjacent(matrix, position, predicate, ignore -> atomic.incrementAndGet());
+        return atomic.get();
     }
 
     public static <T> T rightOf(Matrix<T> matrix, Coordinate position) {
@@ -157,7 +190,7 @@ public class MatrixUtils {
         if (position.x() < of.x())
             return Direction.RIGHT;
         if (position.x() > of.x())
-            return  Direction.LEFT;
+            return Direction.LEFT;
         if (position.y() < of.y())
             return Direction.DOWN;
         if (position.y() > of.y())

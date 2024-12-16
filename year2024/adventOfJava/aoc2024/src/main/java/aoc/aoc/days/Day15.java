@@ -2,6 +2,7 @@ package aoc.aoc.days;
 
 import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Coordinate;
+import aoc.aoc.util.Direction;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -187,24 +188,6 @@ public class Day15 extends AbstractDay {
                             .mapToObj(ch -> Direction.getDirection((char) ch))
                             .toList()
             );
-        }
-    }
-
-    private enum Direction {
-        UP,
-        RIGHT,
-        DOWN,
-        LEFT;
-
-        public static Direction getDirection(char ch) {
-            return switch (ch) {
-                case '^' -> UP;
-                case '>' -> RIGHT;
-                case 'v' -> DOWN;
-                case '<' -> LEFT;
-
-                default -> throw new IllegalStateException("Unexpected value: " + ch);
-            };
         }
     }
 
