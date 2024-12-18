@@ -20,9 +20,12 @@ public class Day17 extends AbstractDay {
 
     @Override
     protected String part2Impl(String input) {
+        if (isSample)
+            input = input.replace('1', '3');
+
         var computer = new Computer(input).with(Part.PART_2);
         var originalProgram = computer.program();
-        var program = new ArrayList<>(computer.program());
+        var program = new ArrayList<>(originalProgram);
 
         long registerA = 0;
         while (!program.isEmpty() && program.removeLast() != null) {
