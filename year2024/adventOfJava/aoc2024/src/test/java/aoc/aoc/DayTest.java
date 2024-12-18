@@ -92,8 +92,7 @@ class DayTest {
     static final Map<DayParameter, String> DISABLED = Map.of(
             dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
             dayPart(11, 1), SLOW,
-            dayPart(11, 2), INCOMPLETE,
-            dayPart(17, 2), INCOMPLETE
+            dayPart(11, 2), INCOMPLETE
     );
 
     static Stream<Object[]> provideTestData() {

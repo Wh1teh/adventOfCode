@@ -12,28 +12,33 @@ public class Day17 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return new Computer(input)
+        var result = new Computer(input)
                 .runProgram()
                 .output();
+        return toStringStripBracketsAndWhiteSpace(result);
     }
 
     @Override
     protected String part2Impl(String input) {
         var computer = new Computer(input).with(Part.PART_2);
-        var programAsString = computer.program();
+        var originalProgram = computer.program();
+        var program = new ArrayList<>(computer.program());
 
-        if (true)
-            throw new UnsupportedOperationException("not working");
-
-        long aRegister = 0;
-        while (!computer.output().equals(programAsString)) {
-            if (aRegister % 1_000_000 == 0)
-                System.out.println("Trying with " + aRegister);
-
-            computer.resetWith(aRegister++)
-                    .runProgram();
+        long registerA = 0;
+        while (!program.isEmpty() && program.removeLast() != null) {
+            registerA = Math.max(0, (registerA << 3) - 1);
+            do {
+                computer.resetWith(++registerA, program)
+                        .runProgram();
+            } while (!computer.output().equals(originalProgram));
         }
-        return "" + (aRegister - 1);
+
+        return "" + registerA;
+    }
+
+    private static String toStringStripBracketsAndWhiteSpace(List<?> list) {
+        return list.toString()
+                .replaceAll("[\\[\\] ]", "");
     }
 
     @Accessors(fluent = true)
@@ -66,9 +71,9 @@ public class Day17 extends AbstractDay {
         private final List<Short> program;
 
         private int instructionPointer = 0;
-        private boolean pointerHasJumped = false;
 
         final List<Short> output = new ArrayList<>();
+        boolean shouldHalt = false;
 
         public Computer(String input) {
             var parts = input.split("\\R{2}");
@@ -77,35 +82,28 @@ public class Day17 extends AbstractDay {
         }
 
         public Computer runProgram() {
-            while (instructionPointer < program.size()) {
+            while (instructionPointer < program.size() && !shouldHalt) {
                 runInstruction(program.get(instructionPointer), program.get(instructionPointer + 1));
-                if (pointerHasJumped)
-                    pointerHasJumped = false;
-                else
-                    instructionPointer += 2;
+                instructionPointer += 2;
             }
 
             return this;
         }
 
-        public String output() {
-            return toStringStripBracketsAndWhiteSpace(output);
+        public List<Short> output() {
+            return output;
         }
 
-        public String program() {
-            return toStringStripBracketsAndWhiteSpace(program);
+        public List<Short> program() {
+            return program;
         }
 
-        private static String toStringStripBracketsAndWhiteSpace(List<?> list) {
-            return list.toString()
-                    .replaceAll("[\\[\\] ]", "");
-        }
-
-        public Computer resetWith(long a) {
+        public Computer resetWith(long a, List<Short> forceCurrentOutput) {
             instructionPointer = 0;
             register.a(a).b(0).c(0);
             output.clear();
-            pointerHasJumped = false;
+            output.addAll(forceCurrentOutput);
+            shouldHalt = false;
 
             return this;
         }
@@ -122,7 +120,7 @@ public class Day17 extends AbstractDay {
         }
 
         private void adv(short operand) {
-            long result = (long) (register.a() / Math.pow(2, getByComboOperand(operand)));
+            long result = performDivision(operand);
             register.a(result);
         }
 
@@ -132,16 +130,15 @@ public class Day17 extends AbstractDay {
         }
 
         private void bst(short operand) {
-            long result = getByComboOperand(operand) % 8;
+            long result = firstThreeBitsOfCombo(operand);
             register.b(result);
         }
 
         private void jnz(short operand) {
-            if (register.a() == 0 || instructionPointer == operand)
+            if (register.a() == 0)
                 return;
 
-            pointerHasJumped = true;
-            instructionPointer = operand;
+            instructionPointer = operand - 2;
         }
 
         private void bxc(short operand) {
@@ -150,35 +147,56 @@ public class Day17 extends AbstractDay {
         }
 
         private void out(short operand) {
-            long result = getByComboOperand(operand) % 8;
+            long result = firstThreeBitsOfCombo(operand);
+            if (part == Part.PART_2 && outputMismatch((short) result))
+                shouldHalt = true;
             output.add((short) result);
         }
 
         private void bdv(short operand) {
-            long result = (long) (register.a() / Math.pow(2, getByComboOperand(operand)));
+            long result = performDivision(operand);
             register.b(result);
         }
 
         private void cdv(short operand) {
-            long result = (long) (register.a() / Math.pow(2, getByComboOperand(operand)));
+            long result = performDivision(operand);
             register.c(result);
+        }
+
+        private long firstThreeBitsOfCombo(short operand) {
+            return getByComboOperand(operand) & 0b111;
+        }
+
+        /**
+         * These are the same:
+         * <pre>
+         *     {@code return (long) (register.a() / Math.pow(2, getByComboOperand(operand)));}
+         *     {@code return register.a() / (1L << getByComboOperand(operand));}
+         *     {@code return register.a() >> getByComboOperand(operand);}
+         * </pre>
+         */
+        private long performDivision(short operand) {
+            return register.a() >> getByComboOperand(operand);
+        }
+
+        private boolean outputMismatch(short result) {
+            return output.size() < program.size() && result != program.get(output.size());
         }
 
         private static Register parseRegister(String input) {
             var entries = input.lines()
-                    .map(line -> Long.parseLong(getPastColon(line)))
+                    .map(line -> Long.parseLong(parsePastColon(line)))
                     .toList();
-            assert entries.size() == 3;
             return new Register(entries.get(0), entries.get(1), entries.get(2));
         }
 
         private static List<Short> parseProgram(String input) {
-            return Arrays.stream(getPastColon(input).split(","))
+            return Arrays.stream(parsePastColon(input).split(","))
                     .map(Short::parseShort)
                     .toList();
         }
 
-        private static String getPastColon(String line) {
+        private static String parsePastColon(String line) {
             return line.split(":")[1].strip();
         }
     }
