@@ -1,5 +1,7 @@
 package aoc.aoc.util;
 
+import lombok.experimental.StandardException;
+
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -43,6 +45,10 @@ public class Graph<T> {
         adjList.get(source).add(new Edge<>(destination, weight));
     }
 
+    public void clear() {
+        adjList.clear();
+    }
+
     public List<T> dijkstra(T start, Predicate<T> endCondition) {
         Map<T, Double> distances = new HashMap<>();
         Map<T, T> previousNodes = new HashMap<>();
@@ -64,6 +70,9 @@ public class Graph<T> {
             }
 
             for (Edge<T> edge : adjList.getOrDefault(current, new ArrayList<>())) {
+                if (edge.weight.doubleValue() < 0)
+                    throw new EdgeWeightException("Edge weight should not be negative for Dijkstra's algorithm");
+
                 double newDist = distances.get(current) + edge.weight.doubleValue();
                 if (newDist < distances.get(edge.destination)) {
                     distances.put(edge.destination, newDist);
@@ -149,5 +158,13 @@ public class Graph<T> {
         for (var vertex : adjList.entrySet()) {
             System.out.println(vertex + " -> " + adjList.get(vertex.getKey()));
         }
+    }
+
+    @StandardException
+    public static class GraphException extends RuntimeException {
+    }
+
+    @StandardException
+    public static class EdgeWeightException extends GraphException {
     }
 }

@@ -1,6 +1,7 @@
 package aoc.aoc.util;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class StringMatrix implements Matrix<Character> {
 
@@ -25,10 +26,29 @@ public class StringMatrix implements Matrix<Character> {
     }
 
     @Override
+    public Character set(Coordinate position, Character element) {
+        return set(position.y(), position.x(), element);
+    }
+
+    @Override
+    public Character set(int y, int x, Character element) {
+        throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    @Override
     public void iterate(MatrixConsumer<Character> consumer) {
         for (int y = 0; y < size(); y++) {
             for (int x = 0; x < size(); x++) {
                 consumer.accept(get(y, x), y, x);
+            }
+        }
+    }
+
+    @Override
+    public void iterate(BiConsumer<Character, Coordinate> consumer) {
+        for (int y = 0; y < size(); y++) {
+            for (int x = 0; x < size(); x++) {
+                consumer.accept(get(y, x), new Coordinate(y, x));
             }
         }
     }
