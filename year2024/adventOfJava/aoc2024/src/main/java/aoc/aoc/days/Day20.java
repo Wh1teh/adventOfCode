@@ -4,6 +4,7 @@ import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -44,13 +45,14 @@ public class Day20 extends AbstractDay {
         }
 
         private Map<Integer, Integer> runCheatScanForEveryPosition(int range, Map<Coordinate, Integer> path) {
-            var saves = new HashMap<Integer, Integer>();
+            var saves = new ConcurrentHashMap<Integer, Integer>();
 
-            path.keySet().forEach(position ->
-                    getSavesInRange(path, position, range).forEach((timeSaved, instancesOf) ->
+            Utils.forEachWithExecutorService(path.keySet(),
+                    position -> getSavesInRange(path, position, range).forEach((timeSaved, instancesOf) ->
                             saves.compute(timeSaved, (k, v) ->
                                     v == null ? instancesOf : v + instancesOf
-                            ))
+                            )
+                    )
             );
 
             return saves;
@@ -110,7 +112,8 @@ public class Day20 extends AbstractDay {
 
             visited.add(position);
             MatrixUtils.applyAdjacent(matrix, position, __ -> true,
-                    adjacent -> diamondScanRecursive(start, adjacent, range, travelled + 1, visited));
+                    adjacent -> diamondScanRecursive(start, adjacent, range, travelled + 1, visited)
+            );
 
             return visited;
         }
