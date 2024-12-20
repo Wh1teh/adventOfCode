@@ -27,6 +27,14 @@ public class Utils {
         }
     }
 
+    public static <T> void forEachWithExecutorService(Iterable<T> iterable, Consumer<T> functionToSubmit) {
+        withExecutorService(e ->
+                iterable.forEach(t ->
+                        e.execute(() -> functionToSubmit.accept(t))
+                )
+        );
+    }
+
     public static boolean isEven(int number) {
         return (number & 1) == 0;
     }

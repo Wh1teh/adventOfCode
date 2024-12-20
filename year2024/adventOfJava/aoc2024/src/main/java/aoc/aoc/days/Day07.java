@@ -23,7 +23,7 @@ public class Day07 extends AbstractDay {
         var calibrations = input.lines().map(Calibration::new).toList();
         withExecutorService(e -> {
             for (var calibration : calibrations) {
-                e.submit(() -> {
+                e.execute(() -> {
                     if (isPossible(calibration, part2))
                         sum.addAndGet(calibration.result);
                 });
