@@ -1,9 +1,11 @@
 package aoc.aoc.days;
 
 import aoc.aoc.solver.AbstractSolver;
+import aoc.aoc.util.Utils;
 
 import java.util.*;
-import java.util.function.LongUnaryOperator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntUnaryOperator;
 
 public class Day22 extends AbstractDay {
 
@@ -30,13 +32,13 @@ public class Day22 extends AbstractDay {
     private static class SecretNumberCounter extends AbstractSolver<SecretNumberCounter> {
 
         private static final int ROUNDS = 2000;
-        private final List<Long> secrets;
+        private final List<Integer> secrets;
 
         public SecretNumberCounter(String input) {
-            this.secrets = input.lines().map(Long::parseLong).toList();
+            this.secrets = input.lines().map(Integer::parseInt).toList();
         }
 
-        public List<Long> getNthSecretForEach() {
+        public List<Integer> getNthSecretForEach() {
             return secrets.stream().map(secret -> {
                 for (int i = 0; i < ROUNDS; i++) {
                     secret = doAllOperations(secret);
@@ -46,43 +48,47 @@ public class Day22 extends AbstractDay {
         }
 
         @SuppressWarnings("java:S117")
-        public long getMostBananasPossible() {
+        public int getMostBananasPossible() {
             var differences = accumulateBananasForSequences(secrets);
             return getLargestAccumulation(differences);
         }
 
-        private static Map<List<Long>, Long> accumulateBananasForSequences(List<Long> secrets) {
-            Map<List<Long>, Long> differences = new HashMap<>();
+        private static Map<List<Byte>, Integer> accumulateBananasForSequences(List<Integer> secrets) {
+            Map<List<Byte>, Integer> differences = new ConcurrentHashMap<>();
 
-            secrets.forEach(secret -> {
-                Set<List<Long>> encountered = new HashSet<>();
-                Deque<Long> diffs = new ArrayDeque<>();
-
-                long previous = -1 * lastDigit(secret);
-                for (int i = 0; i < ROUNDS; i++) {
-                    secret = doAllOperations(secret);
-                    long lastDigit = lastDigit(secret);
-                    long differenceToPrevious = previous - lastDigit;
-                    previous = lastDigit;
-
-                    if (diffs.size() >= 4)
-                        diffs.pop();
-                    diffs.add(differenceToPrevious);
-
-                    var sequence = diffs.stream().toList();
-                    if (!encountered.contains(sequence)) {
-                        encountered.add(sequence);
-
-                        differences.merge(sequence, lastDigit, Long::sum);
-                    }
-                }
-            });
+            Utils.forEachWithExecutorService(secrets,
+                    secret -> accumulateBananaSequencesForSecret(secret, differences)
+            );
 
             return differences;
         }
 
-        private static long getLargestAccumulation(Map<List<Long>, Long> sequences) {
-            long result = -1L;
+        private static void accumulateBananaSequencesForSecret(Integer secret, Map<List<Byte>, Integer> differences) {
+            Set<List<Byte>> encountered = new HashSet<>();
+            Deque<Byte> diffs = new ArrayDeque<>();
+
+            int previous = -1 * lastDigit(secret);
+            for (int i = 0; i < ROUNDS; i++) {
+                secret = doAllOperations(secret);
+                int lastDigit = lastDigit(secret);
+                byte differenceToPrevious = (byte) (previous - lastDigit);
+                previous = lastDigit;
+
+                if (diffs.size() >= 4)
+                    diffs.pop();
+                diffs.add(differenceToPrevious);
+
+                var sequence = diffs.stream().toList();
+                if (!encountered.contains(sequence)) {
+                    encountered.add(sequence);
+
+                    differences.merge(sequence, lastDigit, Integer::sum);
+                }
+            }
+        }
+
+        private static int getLargestAccumulation(Map<List<Byte>, Integer> sequences) {
+            int result = -1;
 
             for (var accumulation : sequences.values()) {
                 result = Math.max(result, accumulation);
@@ -91,27 +97,27 @@ public class Day22 extends AbstractDay {
             return result;
         }
 
-        private static long lastDigit(long secret) {
+        private static int lastDigit(int secret) {
             return secret % 10;
         }
 
-        private static long doAllOperations(long secret) {
+        private static int doAllOperations(int secret) {
             secret = doOperation(secret, s -> s << 6);
             secret = doOperation(secret, s -> s >> 5);
             return doOperation(secret, s -> s << 11);
         }
 
-        private static long doOperation(long secret, LongUnaryOperator operation) {
-            long value = operation.applyAsLong(secret);
+        private static int doOperation(int secret, IntUnaryOperator operation) {
+            int value = operation.applyAsInt(secret);
             secret = mix(value, secret);
             return prune(secret);
         }
 
-        private static long mix(long value, long secret) {
+        private static int mix(int value, int secret) {
             return value ^ secret;
         }
 
-        private static long prune(long secret) {
+        private static int prune(int secret) {
             return secret & 0xffffff;
         }
     }
