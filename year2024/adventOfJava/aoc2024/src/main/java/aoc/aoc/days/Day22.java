@@ -32,6 +32,8 @@ public class Day22 extends AbstractDay {
     private static class SecretNumberCounter extends AbstractSolver<SecretNumberCounter> {
 
         private static final int ROUNDS = 2000;
+        public static final int LEAST_5_BITS = 0b11111;
+        public static final int LEAST_20_BITS = 0xfffff;
         private final List<Integer> secrets;
 
         public SecretNumberCounter(String input) {
@@ -53,8 +55,8 @@ public class Day22 extends AbstractDay {
             return getLargestAccumulation(differences);
         }
 
-        private static Map<List<Byte>, Integer> accumulateBananasForSequences(List<Integer> secrets) {
-            Map<List<Byte>, Integer> differences = new ConcurrentHashMap<>();
+        private static Map<Integer, Integer> accumulateBananasForSequences(List<Integer> secrets) {
+            Map<Integer, Integer> differences = new ConcurrentHashMap<>();
 
             Utils.forEachWithExecutorService(secrets,
                     secret -> accumulateBananaSequencesForSecret(secret, differences)
@@ -63,9 +65,9 @@ public class Day22 extends AbstractDay {
             return differences;
         }
 
-        private static void accumulateBananaSequencesForSecret(Integer secret, Map<List<Byte>, Integer> differences) {
-            Set<List<Byte>> encountered = new HashSet<>();
-            Deque<Byte> diffs = new ArrayDeque<>();
+        private static void accumulateBananaSequencesForSecret(Integer secret, Map<Integer, Integer> differences) {
+            Set<Integer> encountered = new HashSet<>();
+            int sequence = 0;
 
             int previous = -1 * lastDigit(secret);
             for (int i = 0; i < ROUNDS; i++) {
@@ -74,11 +76,7 @@ public class Day22 extends AbstractDay {
                 byte differenceToPrevious = (byte) (previous - lastDigit);
                 previous = lastDigit;
 
-                if (diffs.size() >= 4)
-                    diffs.pop();
-                diffs.add(differenceToPrevious);
-
-                var sequence = diffs.stream().toList();
+                sequence = queueDifferenceToSequence(sequence, differenceToPrevious);
                 if (!encountered.contains(sequence)) {
                     encountered.add(sequence);
 
@@ -87,7 +85,11 @@ public class Day22 extends AbstractDay {
             }
         }
 
-        private static int getLargestAccumulation(Map<List<Byte>, Integer> sequences) {
+        private static int queueDifferenceToSequence(int sequence, byte differenceToPrevious) {
+            return ((sequence << 5) | (differenceToPrevious & LEAST_5_BITS)) & LEAST_20_BITS;
+        }
+
+        private static int getLargestAccumulation(Map<?, Integer> sequences) {
             int result = -1;
 
             for (var accumulation : sequences.values()) {
