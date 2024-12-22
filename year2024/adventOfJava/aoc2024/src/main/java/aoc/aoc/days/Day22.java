@@ -3,17 +3,15 @@ package aoc.aoc.days;
 import aoc.aoc.solver.AbstractSolver;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongUnaryOperator;
 
 public class Day22 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        var a = new SecretNumberCounter(input)
-                .with(Part.PART_1)
-                .getNthSecretForEach(2000);
-        return "" + a.stream().mapToLong(Long::valueOf).sum();
+        return "" + new SecretNumberCounter(input)
+                .getNthSecretForEach()
+                .stream().mapToLong(Long::valueOf).sum();
     }
 
     @Override
@@ -25,104 +23,96 @@ public class Day22 extends AbstractDay {
                     3
                     2024""";
 
-        var a = new SecretNumberCounter(input)
-                .with(Part.PART_1)
-                .getNthSecretForEach2(2000);
-        return "" + a;
+        return "" + new SecretNumberCounter(input)
+                .getMostBananasPossible();
     }
 
     private static class SecretNumberCounter extends AbstractSolver<SecretNumberCounter> {
 
+        private static final int ROUNDS = 2000;
         private final List<Long> secrets;
 
         public SecretNumberCounter(String input) {
             this.secrets = input.lines().map(Long::parseLong).toList();
         }
 
-        public long getNthSecretForEach2(final long rounds) {
-            List<Map<List<Long>, Long>> differences = new ArrayList<>();
-
-            secrets.forEach(secret -> {
-                Map<List<Long>, Long> m = new HashMap<>();
-                Deque<Long> diffs = new ArrayDeque<>();
-                var sb = new StringBuilder();
-
-                long previous = difference(0, lastDigit(secret, sb));
-                for (int i = 0; i < rounds; i++) {
-                    secret = doAllOperations(secret);
-                    long lastDigit = lastDigit(secret, sb);
-                    long diff = difference(previous, lastDigit);
-                    previous = lastDigit;
-
-                    if (diffs.size() >= 4)
-                        diffs.pop();
-                    diffs.add(diff);
-                    m.putIfAbsent(diffs.stream().toList(),lastDigit);
-                }
-
-                differences.add(m);
-            });
-
-            long mostBananasPossible = -1;
-            for (long i = -9; i < 10; i++) {
-                for (long j = -9; j < 10; j++) {
-                    for (long k = -9; k < 10; k++) {
-                        for (long m = -9; m < 10; m++) {
-                            var sequence = List.of(i, j, k, m);
-                            var accumulate = new AtomicLong();
-                            differences.forEach(map ->
-                                    map.computeIfPresent(sequence, (set, bananas) -> {
-                                        accumulate.addAndGet(bananas);
-                                        return bananas;
-                                    })
-                            );
-                            mostBananasPossible = Math.max(accumulate.get(),mostBananasPossible);
-                        }
-                    }
-                }
-            }
-
-            return mostBananasPossible;
-        }
-
-        private Long difference(long previous, long lastDigit) {
-            return lastDigit - previous;
-        }
-
-        private static long lastDigit(long secret, StringBuilder sb) {
-            sb.append(secret);
-            long result = (long) sb.charAt(sb.length() - 1) - '0';
-            sb.setLength(0);
-            return result;
-        }
-
-        public List<Long> getNthSecretForEach(final long rounds) {
+        public List<Long> getNthSecretForEach() {
             return secrets.stream().map(secret -> {
-                for (int i = 0; i < rounds; i++) {
+                for (int i = 0; i < ROUNDS; i++) {
                     secret = doAllOperations(secret);
                 }
                 return secret;
             }).toList();
         }
 
-        private long doAllOperations(long secret) {
-            secret = doOperation(secret,s -> s << 6);
-            secret = doOperation(secret,s -> s >> 5);
-            return doOperation(secret,s -> s << 11);
+        @SuppressWarnings("java:S117")
+        public long getMostBananasPossible() {
+            var differences = accumulateBananasForSequences(secrets);
+            return getLargestAccumulation(differences);
         }
 
-        private long doOperation(long secret, LongUnaryOperator operation) {
+        private static Map<List<Long>, Long> accumulateBananasForSequences(List<Long> secrets) {
+            Map<List<Long>, Long> differences = new HashMap<>();
+
+            secrets.forEach(secret -> {
+                Set<List<Long>> encountered = new HashSet<>();
+                Deque<Long> diffs = new ArrayDeque<>();
+
+                long previous = -1 * lastDigit(secret);
+                for (int i = 0; i < ROUNDS; i++) {
+                    secret = doAllOperations(secret);
+                    long lastDigit = lastDigit(secret);
+                    long differenceToPrevious = previous - lastDigit;
+                    previous = lastDigit;
+
+                    if (diffs.size() >= 4)
+                        diffs.pop();
+                    diffs.add(differenceToPrevious);
+
+                    var sequence = diffs.stream().toList();
+                    if (!encountered.contains(sequence)) {
+                        encountered.add(sequence);
+
+                        differences.merge(sequence, lastDigit, Long::sum);
+                    }
+                }
+            });
+
+            return differences;
+        }
+
+        private static long getLargestAccumulation(Map<List<Long>, Long> sequences) {
+            long result = -1L;
+
+            for (var accumulation : sequences.values()) {
+                result = Math.max(result, accumulation);
+            }
+
+            return result;
+        }
+
+        private static long lastDigit(long secret) {
+            return secret % 10;
+        }
+
+        private static long doAllOperations(long secret) {
+            secret = doOperation(secret, s -> s << 6);
+            secret = doOperation(secret, s -> s >> 5);
+            return doOperation(secret, s -> s << 11);
+        }
+
+        private static long doOperation(long secret, LongUnaryOperator operation) {
             long value = operation.applyAsLong(secret);
             secret = mix(value, secret);
             return prune(secret);
         }
 
-        private long mix(long value, long secret) {
+        private static long mix(long value, long secret) {
             return value ^ secret;
         }
 
-        private long prune(long secret) {
-            return secret & 16777215;
+        private static long prune(long secret) {
+            return secret & 0xffffff;
         }
     }
 }
