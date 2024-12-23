@@ -4,9 +4,9 @@ import java.io.IOException;
 
 public interface Day extends Cloneable {
 
-    String sample(int part) throws IOException;
+    DayResult sample(int part) throws IOException;
 
-    String part(int part) throws IOException;
+    DayResult part(int part) throws IOException;
 
     String debugString();
 

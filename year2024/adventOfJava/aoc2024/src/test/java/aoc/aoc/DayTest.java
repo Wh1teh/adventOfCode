@@ -1,7 +1,10 @@
 package aoc.aoc;
 
+import aoc.aoc.benchmark.Benchmarks;
 import aoc.aoc.days.AbstractDay;
 import aoc.aoc.days.Day;
+import aoc.aoc.days.DayResult;
+import aoc.aoc.benchmark.WithBenchmarks;
 import aoc.aoc.testutils.DayParameter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -28,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
 class DayTest {
+
+    private static final boolean BENCHMARKS_ENABLED = true;
 
     @DisplayName("Read methods in abstract Day should read from classpath correctly")
     @Test
@@ -57,10 +63,10 @@ class DayTest {
             }
         };
 
-        assertTrue(day.sample(1).contains(sampleString));
-        assertTrue(day.sample(2).contains(sampleString));
-        assertTrue(day.part(1).contains(inputString));
-        assertTrue(day.part(2).contains(inputString));
+        assertTrue(day.sample(1).output().contains(sampleString));
+        assertTrue(day.sample(2).output().contains(sampleString));
+        assertTrue(day.part(1).output().contains(inputString));
+        assertTrue(day.part(2).output().contains(inputString));
     }
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
@@ -153,14 +159,17 @@ class DayTest {
         }
 
         try {
-            assertEquals(sampleAnswer, day.sample(part));
+            assertEquals(sampleAnswer, day.sample(part).output());
             writeDebug(dayNumber, part, true, day);
         } catch (IOException e) {
             Assertions.fail("Could not read file for Day%02d part%d sample".formatted(dayNumber, part), e);
         }
 
-        String result = null;
+        DayResult result = null;
         try {
+            if (BENCHMARKS_ENABLED)
+                ((WithBenchmarks) day).enableBenchmarks();
+
             result = day.part(part);
             writeDebug(dayNumber, part, false, day);
         } catch (IOException e) {
@@ -168,9 +177,31 @@ class DayTest {
         }
 
         assertNotNull(result);
-        assertFalse(result.isBlank());
+        assertNotNull(result.output());
+        assertFalse(result.output().isBlank());
+        if (BENCHMARKS_ENABLED)
+            assertNotNull(result.benchmarks().result());
 
-        System.out.printf("DAY %02d PART %d RESULT:%n%s%n", dayNumber, part, result);
+        printResults(dayNumber, part, result);
+    }
+
+    private static void printResults(int dayNumber, int part, DayResult result) {
+        if (BENCHMARKS_ENABLED)
+            System.out.printf("DAY %02d PART %d RESULT (%s):%n%s%n",
+                    dayNumber, part, formatBenchmarkResults(result.benchmarks()), result.output());
+        else
+            System.out.printf("DAY %02d PART %d RESULT:%n%s%n",
+                    dayNumber, part, result.output());
+    }
+
+    private static String formatBenchmarkResults(Benchmarks benchmarks) {
+        return benchmarks.result().entrySet().stream()
+                .map(e ->
+                        "%s took %.2fms".formatted(
+                                e.getKey().description(),
+                                e.getValue().duration().toNanos() / 1_000_000.0
+                        )
+                ).collect(Collectors.joining(" | "));
     }
 
     private static Day createDay(int dayNumber) throws Exception {
