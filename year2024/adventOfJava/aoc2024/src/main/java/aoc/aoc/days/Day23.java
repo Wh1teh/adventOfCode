@@ -47,10 +47,10 @@ public class Day23 extends AbstractDay {
             Set<String> copy = new TreeSet<>(connections);
             copy.add(computer);
 
-            connections.stream().filter(copy::contains).forEach(connection -> {
-                var c2 = network.get(connection);
-                c2.add(connection);
-                copy.retainAll(c2);
+            connections.stream().filter(copy::contains).forEach(connected -> {
+                var connectsTo = network.get(connected);
+                connectsTo.add(connected);
+                copy.retainAll(connectsTo);
             });
 
             return copy;
@@ -79,21 +79,14 @@ public class Day23 extends AbstractDay {
             return matches.size();
         }
 
+        @SuppressWarnings("java:S117")
         private Map<String, Set<String>> createGraphFromConnections(String input) {
             Map<String, Set<String>> connections = new HashMap<>();
 
             input.lines().forEach(line -> {
-                var parts = line.split("-");
-                connections.compute(parts[0], (k, v) -> {
-                    if (v == null) v = new HashSet<>();
-                    v.add(parts[1]);
-                    return v;
-                });
-                connections.compute(parts[1], (k, v) -> {
-                    if (v == null) v = new HashSet<>();
-                    v.add(parts[0]);
-                    return v;
-                });
+                var computers = line.split("-");
+                connections.computeIfAbsent(computers[0], __ -> new HashSet<>()).add(computers[1]);
+                connections.computeIfAbsent(computers[1], __ -> new HashSet<>()).add(computers[0]);
             });
 
             return connections;
