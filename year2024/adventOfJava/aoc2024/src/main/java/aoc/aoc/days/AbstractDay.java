@@ -21,9 +21,13 @@ public abstract class AbstractDay implements Day {
     @Setter(AccessLevel.PRIVATE)
     protected boolean isSample;
 
-    protected AbstractDay() {
+    AbstractDay() {
         String className = this.getClass().getSimpleName();
         this.dayOrdinal = className.substring(className.length() - 2);
+    }
+
+    protected AbstractDay(int part) {
+        this.dayOrdinal = "%02d".formatted(part);
     }
 
     @SuppressWarnings("java:S112")
@@ -46,7 +50,7 @@ public abstract class AbstractDay implements Day {
 
     @SneakyThrows
     private AbstractDay createNewInstance() {
-        return this.getClass().getDeclaredConstructor().newInstance();
+        return (AbstractDay) this.clone();
     }
 
     private String runPart(

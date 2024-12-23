@@ -1,8 +1,10 @@
 package aoc.aoc;
 
+import aoc.aoc.days.AbstractDay;
 import aoc.aoc.days.Day;
 import aoc.aoc.testutils.DayParameter;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,9 +13,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -25,12 +32,46 @@ class DayTest {
 
     @DisplayName("Read methods in abstract Day should read from classpath correctly")
     @Test
+    @SneakyThrows
     void dayShouldReadFiles() {
-        Day day = new Day42();
-        assertTrue(day.sample(1).contains("testing"));
-        assertTrue(day.sample(2).contains("testing"));
-        assertTrue(day.part(1).contains("another test"));
-        assertTrue(day.part(2).contains("another test"));
+        var resource = Objects.requireNonNull(
+                DayTest.class.getClassLoader().getResource("daydata"),
+                "'daydata' folder not found in classpath"
+        );
+        var path = Paths.get(resource.toURI()).toString();
+        String sampleString = "testing sample input";
+        String inputString = "testing actual input";
+
+        Files.writeString(Paths.get(path, "day42_0"), sampleString);
+        Files.writeString(Paths.get(path, "day42_1"), inputString);
+
+        Day day = new AbstractDay(42) {
+
+            @Override
+            protected String part1Impl(String input) {
+                return input;
+            }
+
+            @Override
+            protected String part2Impl(String input) {
+                return input;
+            }
+        };
+
+        assertTrue(day.sample(1).contains(sampleString));
+        assertTrue(day.sample(2).contains(sampleString));
+        assertTrue(day.part(1).contains(inputString));
+        assertTrue(day.part(2).contains(inputString));
+    }
+
+    @SneakyThrows
+    private static Path getDayDataPath() {
+        var resource = Objects.requireNonNull(
+                DayTest.class.getClassLoader().getResource("daydata"),
+                "'daydata' folder not found in classpath"
+        );
+
+        return Paths.get(resource.toURI());
     }
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
@@ -92,7 +133,8 @@ class DayTest {
     static final Map<DayParameter, String> DISABLED = Map.of(
             dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
             dayPart(11, 1), SLOW,
-            dayPart(11, 2), INCOMPLETE
+            dayPart(11, 2), INCOMPLETE,
+            dayPart(19, 2), INCOMPLETE
     );
 
     static Stream<Object[]> provideTestData() {
@@ -113,20 +155,33 @@ class DayTest {
         testDay(day.day(), day.part(), sampleAnswer);
     }
 
-    @SneakyThrows
     private static void testDay(int dayNumber, int part, String sampleAnswer) {
-        Day day = createDay(dayNumber);
+        Day day = null;
+        try {
+            day = createDay(dayNumber);
+        } catch (Exception e) {
+            Assertions.fail("Day%02d does not exist".formatted(dayNumber), e);
+        }
 
-        assertEquals(sampleAnswer, day.sample(part));
-        writeDebug(dayNumber, part, true, day);
+        try {
+            assertEquals(sampleAnswer, day.sample(part));
+            writeDebug(dayNumber, part, true, day);
+        } catch (IOException e) {
+            Assertions.fail("Could not read file for Day%02d part%d sample".formatted(dayNumber, part), e);
+        }
 
-        String result = day.part(part);
-        writeDebug(dayNumber, part, false, day);
+        String result = null;
+        try {
+            result = day.part(part);
+            writeDebug(dayNumber, part, false, day);
+        } catch (IOException e) {
+            Assertions.fail("Could not read file for Day%02d part%d input".formatted(dayNumber, part), e);
+        }
 
         assertNotNull(result);
         assertFalse(result.isBlank());
 
-        System.out.printf("DAY %d PART %d RESULT:%n%s%n", dayNumber, part, result);
+        System.out.printf("DAY %02d PART %d RESULT:%n%s%n", dayNumber, part, result);
     }
 
     private static Day createDay(int dayNumber) throws Exception {
