@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,16 +61,6 @@ class DayTest {
         assertTrue(day.sample(2).contains(sampleString));
         assertTrue(day.part(1).contains(inputString));
         assertTrue(day.part(2).contains(inputString));
-    }
-
-    @SneakyThrows
-    private static Path getDayDataPath() {
-        var resource = Objects.requireNonNull(
-                DayTest.class.getClassLoader().getResource("daydata"),
-                "'daydata' folder not found in classpath"
-        );
-
-        return Paths.get(resource.toURI());
     }
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
