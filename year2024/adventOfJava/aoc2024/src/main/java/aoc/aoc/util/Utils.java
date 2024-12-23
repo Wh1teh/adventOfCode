@@ -38,4 +38,9 @@ public class Utils {
     public static boolean isEven(int number) {
         return (number & 1) == 0;
     }
+
+    public static String toStringStripBracketsAndWhiteSpace(Object object) {
+        return object.toString()
+                .replaceAll("[\\[\\]\\s]", "");
+    }
 }

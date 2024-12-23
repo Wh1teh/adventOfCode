@@ -1,6 +1,7 @@
 package aoc.aoc.days;
 
 import aoc.aoc.solver.AbstractSolver;
+import aoc.aoc.util.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -15,7 +16,7 @@ public class Day17 extends AbstractDay {
         var result = new Computer(input)
                 .runProgram()
                 .output();
-        return toStringStripBracketsAndWhiteSpace(result);
+        return Utils.toStringStripBracketsAndWhiteSpace(result);
     }
 
     @Override
@@ -37,11 +38,6 @@ public class Day17 extends AbstractDay {
         }
 
         return "" + registerA;
-    }
-
-    private static String toStringStripBracketsAndWhiteSpace(List<?> list) {
-        return list.toString()
-                .replaceAll("[\\[\\] ]", "");
     }
 
     @Accessors(fluent = true)
