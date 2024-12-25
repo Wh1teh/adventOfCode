@@ -116,7 +116,7 @@ class DayTest {
             "23",
             "7", // day23
             "co,de,ka,ta",
-            "", // day24
+            "2024", // day24
             "",
             "", // day25
             ""
