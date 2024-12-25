@@ -95,7 +95,12 @@ public class GenericMatrix<T> implements Matrix<T> {
     }
 
     @Override
-    public int size() {
-        return width; // TODO need to rethink this on interface level
+    public int width() {
+        return width;
+    }
+
+    @Override
+    public int height() {
+        return height;
     }
 }

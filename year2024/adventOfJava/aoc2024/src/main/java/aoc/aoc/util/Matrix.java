@@ -16,7 +16,9 @@ public interface Matrix<T> {
 
     void iterate(BiConsumer<T, Coordinate> consumer);
 
-    int size();
+    int width();
+
+    int height();
 
     @FunctionalInterface
     interface MatrixConsumer<T> {

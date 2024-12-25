@@ -85,7 +85,7 @@ public class Day18 extends AbstractDay {
         public List<Coordinate> calculateShortestPath() {
             buildGraph();
             var start = new Coordinate(0, 0);
-            var end = new Coordinate(matrix.size() - 1, matrix.size() - 1);
+            var end = new Coordinate(matrix.width() - 1, matrix.width() - 1);
 
             return graph.dijkstra(start, position -> position.equals(end));
         }

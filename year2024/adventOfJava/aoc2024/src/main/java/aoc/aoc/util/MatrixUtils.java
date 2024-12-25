@@ -2,6 +2,7 @@ package aoc.aoc.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.function.TriConsumer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,8 +64,8 @@ public class MatrixUtils {
     }
 
     public static <T> boolean notWithinMatrix(int y, int x, Matrix<T> matrix) {
-        return y < 0 || y >= matrix.size()
-                || x < 0 || x >= matrix.size();
+        return y < 0 || y >= matrix.height()
+                || x < 0 || x >= matrix.width();
     }
 
     public static <T> void applyAdjacent(
@@ -83,7 +84,7 @@ public class MatrixUtils {
             Predicate<T> predicate,
             Consumer<Coordinate> action
     ) {
-        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
+        if (notWithinMatrix(y, x, matrix))
             return;
 
         T ch = matrix.get(y, x);
@@ -108,12 +109,37 @@ public class MatrixUtils {
             BiConsumer<Coordinate, Direction> action,
             Direction direction
     ) {
-        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
+        if (notWithinMatrix(y, x, matrix))
             return;
 
         T ch = matrix.get(y, x);
         if (predicate.test(ch))
             action.accept(new Coordinate(y, x), direction);
+    }
+
+    public static <T> void applyAdjacent(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            TriConsumer<Coordinate, Direction, T> action
+    ) {
+        applyTo(matrix, position.y() - 1, position.x(), predicate, action, Direction.UP);
+        applyTo(matrix, position.y(), position.x() - 1, predicate, action, Direction.LEFT);
+        applyTo(matrix, position.y() + 1, position.x(), predicate, action, Direction.DOWN);
+        applyTo(matrix, position.y(), position.x() + 1, predicate, action, Direction.RIGHT);
+    }
+
+    private static <T> void applyTo(
+            Matrix<T> matrix, int y, int x,
+            Predicate<T> predicate,
+            TriConsumer<Coordinate, Direction, T> action,
+            Direction direction
+    ) {
+        if (notWithinMatrix(y, x, matrix))
+            return;
+
+        T ch = matrix.get(y, x);
+        if (predicate.test(ch))
+            action.accept(new Coordinate(y, x), direction, ch);
     }
 
     public static <T> void applyAdjacentIncludeOutOfBounds(
@@ -139,7 +165,7 @@ public class MatrixUtils {
             Matrix<T> matrix, int y, int x,
             Predicate<T> predicate,
             Consumer<Coordinate> action, Consumer<Coordinate> outOfBoundsFallback) {
-        if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size()) {
+        if (y < 0 || x < 0 || y >= matrix.width() || x >= matrix.width()) {
             outOfBoundsFallback.accept(new Coordinate(y, x));
             return;
         }

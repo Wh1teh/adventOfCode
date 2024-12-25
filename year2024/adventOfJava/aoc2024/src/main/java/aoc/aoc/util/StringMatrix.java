@@ -37,8 +37,8 @@ public class StringMatrix implements Matrix<Character> {
 
     @Override
     public void iterate(MatrixConsumer<Character> consumer) {
-        for (int y = 0; y < size(); y++) {
-            for (int x = 0; x < size(); x++) {
+        for (int y = 0; y < width(); y++) {
+            for (int x = 0; x < width(); x++) {
                 consumer.accept(get(y, x), y, x);
             }
         }
@@ -46,15 +46,20 @@ public class StringMatrix implements Matrix<Character> {
 
     @Override
     public void iterate(BiConsumer<Character, Coordinate> consumer) {
-        for (int y = 0; y < size(); y++) {
-            for (int x = 0; x < size(); x++) {
+        for (int y = 0; y < width(); y++) {
+            for (int x = 0; x < width(); x++) {
                 consumer.accept(get(y, x), new Coordinate(y, x));
             }
         }
     }
 
     @Override
-    public int size() {
+    public int width() {
+        return matrix.size();
+    }
+
+    @Override
+    public int height() {
         return matrix.size();
     }
 }

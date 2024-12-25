@@ -17,6 +17,15 @@ public enum Direction {
         };
     }
 
+    public static char toChar(Direction direction) {
+        return switch (direction) {
+            case UP -> '^';
+            case RIGHT -> '>';
+            case DOWN -> 'v';
+            case LEFT -> '<';
+        };
+    }
+
     public static Direction oppositeOf(Direction direction) {
         return switch (direction) {
             case UP -> DOWN;

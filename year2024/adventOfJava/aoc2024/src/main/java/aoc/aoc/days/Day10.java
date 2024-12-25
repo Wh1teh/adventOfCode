@@ -103,7 +103,7 @@ public class Day10 extends AbstractDay {
         }
 
         private void applyTo(int y, int x, Predicate<Character> predicate, Consumer<Coordinate> action) {
-            if (y < 0 || x < 0 || y >= matrix.size() || x >= matrix.size())
+            if (y < 0 || x < 0 || y >= matrix.width() || x >= matrix.width())
                 return;
 
             char ch = matrix.get(y, x);

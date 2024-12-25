@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 
 public class Graph<T> {
 
-    private final Map<T, List<Edge<T>>> adjList = new HashMap<>();
+    private final Map<T, List<Edge<T>>> adjacencyList = new HashMap<>();
 
     public static class Edge<T> {
         T destination;
@@ -30,23 +30,23 @@ public class Graph<T> {
     }
 
     public void addVertex(T vertex) {
-        adjList.putIfAbsent(vertex, new ArrayList<>());
+        adjacencyList.putIfAbsent(vertex, new ArrayList<>());
     }
 
     public void addEdge(T source, T destination) {
-        adjList.putIfAbsent(source, new ArrayList<>());
-        adjList.putIfAbsent(destination, new ArrayList<>());
-        adjList.get(source).add(new Edge<>(destination, Integer.MIN_VALUE));
+        adjacencyList.putIfAbsent(source, new ArrayList<>());
+        adjacencyList.putIfAbsent(destination, new ArrayList<>());
+        adjacencyList.get(source).add(new Edge<>(destination, Integer.MIN_VALUE));
     }
 
     public void addEdge(T source, T destination, int weight) {
-        adjList.putIfAbsent(source, new ArrayList<>());
-        adjList.putIfAbsent(destination, new ArrayList<>());
-        adjList.get(source).add(new Edge<>(destination, weight));
+        adjacencyList.putIfAbsent(source, new ArrayList<>());
+        adjacencyList.putIfAbsent(destination, new ArrayList<>());
+        adjacencyList.get(source).add(new Edge<>(destination, weight));
     }
 
     public void clear() {
-        adjList.clear();
+        adjacencyList.clear();
     }
 
     public List<T> dijkstra(T start, Predicate<T> endCondition) {
@@ -54,7 +54,7 @@ public class Graph<T> {
         Map<T, T> previousNodes = new HashMap<>();
         PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(node -> node.distance));
 
-        for (T node : adjList.keySet()) {
+        for (T node : adjacencyList.keySet()) {
             distances.put(node, Double.POSITIVE_INFINITY);
             previousNodes.put(node, null);
         }
@@ -69,7 +69,7 @@ public class Graph<T> {
                 return constructPath(previousNodes, current);
             }
 
-            for (Edge<T> edge : adjList.getOrDefault(current, new ArrayList<>())) {
+            for (Edge<T> edge : adjacencyList.getOrDefault(current, new ArrayList<>())) {
                 if (edge.weight.doubleValue() < 0)
                     throw new EdgeWeightException("Edge weight should not be negative for Dijkstra's algorithm");
 
@@ -94,12 +94,59 @@ public class Graph<T> {
         return path;
     }
 
+    private Map<T, Integer> bfsLabel(T start, T end) {
+        Map<T, Integer> depth = new HashMap<>(Map.of(start, 0));
+        Deque<T> queue = new ArrayDeque<>(List.of(start));
+
+        while (!queue.isEmpty()) {
+            T current = queue.poll();
+            if (current.equals(end))
+                return depth;
+
+            for (var adjacent : adjacencyList.getOrDefault(current, Collections.emptyList())) {
+                var destination = adjacent.destination;
+                depth.computeIfAbsent(destination, __ -> {
+                    queue.add(destination);
+                    return depth.get(current) + 1;
+                });
+            }
+        }
+
+        return depth;
+    }
+
+    private void dfsShortestPaths(T current, T end, Map<T, Integer> depth, List<T> path, List<List<T>> result) {
+        path.add(current);
+
+        if (current.equals(end)) {
+            result.add(new ArrayList<>(path));
+        } else {
+            for (var adjacent : adjacencyList.getOrDefault(current, Collections.emptyList())) {
+                var destination = adjacent.destination;
+                if (depth.containsKey(destination) && depth.get(destination) == depth.get(current) + 1)
+                    dfsShortestPaths(destination, end, depth, path, result);
+            }
+        }
+
+        path.removeLast();
+    }
+
+    public List<List<T>> findEveryShortestPath(T start, T end) {
+        Map<T, Integer> depth = bfsLabel(start, end);
+        List<List<T>> result = new ArrayList<>();
+        if (!depth.containsKey(end))
+            return result;
+
+        dfsShortestPaths(start, end, depth, new ArrayList<>(), result);
+        return result;
+    }
+
     public int countCycles() {
         Set<T> visited = new HashSet<>();
         Set<T> recursionStack = new HashSet<>();
         int[] cycleCount = {0};
 
-        for (T vertex : adjList.keySet()) {
+        for (T vertex : adjacencyList.keySet()) {
             if (!visited.contains(vertex) && dfs(vertex, visited, recursionStack))
                 cycleCount[0]++;
         }
@@ -111,7 +158,7 @@ public class Graph<T> {
         visited.add(current);
         recursionStack.add(current);
 
-        for (Edge<T> neighbor : adjList.get(current)) {
+        for (Edge<T> neighbor : adjacencyList.get(current)) {
             var destination = neighbor.destination;
             if (!visited.contains(destination)) {
                 if (dfs(destination, visited, recursionStack)) {
@@ -141,7 +188,7 @@ public class Graph<T> {
 
         while (!queue.isEmpty()) {
             T current = queue.poll();
-            for (Edge<T> neighbor : adjList.getOrDefault(current, new ArrayList<>())) {
+            for (Edge<T> neighbor : adjacencyList.getOrDefault(current, new ArrayList<>())) {
                 var destination = neighbor.destination;
                 if (!visited.contains(destination)) {
                     visited.add(destination);
@@ -155,8 +202,8 @@ public class Graph<T> {
     }
 
     public void printGraph() {
-        for (var vertex : adjList.entrySet()) {
-            System.out.println(vertex + " -> " + adjList.get(vertex.getKey()));
+        for (var vertex : adjacencyList.entrySet()) {
+            System.out.println(vertex + " -> " + adjacencyList.get(vertex.getKey()));
         }
     }
 

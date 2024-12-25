@@ -121,12 +121,12 @@ public class Day20 extends AbstractDay {
         private Set<Coordinate> diamondScanIterative(Coordinate start, int range) {
             Set<Coordinate> visited = new TreeSet<>();
 
-            for (int row = range * -1; row <= range && start.y() + row < matrix.size(); row++) {
+            for (int row = range * -1; row <= range && start.y() + row < matrix.width(); row++) {
                 if (row + start.y() < 0)
                     continue;
 
                 int colOffset = range - Math.abs(row);
-                for (int col = colOffset * -1; col <= colOffset && start.x() + col < matrix.size(); col++) {
+                for (int col = colOffset * -1; col <= colOffset && start.x() + col < matrix.width(); col++) {
                     if (col + start.x() < 0)
                         continue;
 

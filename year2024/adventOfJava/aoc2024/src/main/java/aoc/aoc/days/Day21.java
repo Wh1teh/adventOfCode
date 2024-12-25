@@ -1,156 +1,124 @@
 package aoc.aoc.days;
 
 import aoc.aoc.solver.AbstractSolver;
-import aoc.aoc.util.Coordinate;
-import aoc.aoc.util.Quad;
+import aoc.aoc.util.*;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+
+import static aoc.aoc.util.GenericMatrix.charMatrix;
 
 public class Day21 extends AbstractDay {
 
-    // 166248 too high
     @Override
     protected String part1Impl(String input) {
-        var a = new KeypadMadness().start(input);
-        return "" + a;
+        return "" + new KeypadMadness().countComplexity(input, 3);
     }
 
     @Override
     protected String part2Impl(String input) {
-        return "";
+        return "" + new KeypadMadness().countComplexity(input, 26);
     }
 
     private static class KeypadMadness extends AbstractSolver<KeypadMadness> {
 
-        private long start(String input) {
-            var atomic = new AtomicLong(0L);
+        private static final String PRIORITY = " <v>^A";
 
-            input.lines().forEach(line -> {
-                var sb = new StringBuilder();
-                char previous = 'A';
-                for (char ch : line.toCharArray()) {
-                    var dh = propagate(previous, ch, 0, 3, true);
-                    var dv = propagate(previous, ch, 0, 3, false);
-                    previous = ch;
-                    sb.append(dh.length() < dv.length() ? dh : dv);
-                }
-                var numerical = numericalValue(line);
-                var shortest = sb.length();
-                var result = shortest * numerical;
-                System.out.println("%d * %d = %d".formatted(shortest, numerical, result));
-                atomic.addAndGet(result);
-            });
-            System.out.println();
+        private final Graph<Character> graphNumpad;
+        private final Graph<Character> graphDpad;
 
-            return atomic.get();
+        private final Map<Pair<Character, Character>, Direction> directions = new HashMap<>();
+
+        private final Map<Pair<String, Integer>, Long> outerMemo = new HashMap<>();
+        private final Map<Pair<Character, Character>, List<String>> innerMemo = new HashMap<>();
+
+        public KeypadMadness() {
+            this.graphNumpad = buildKeypadGraph(charMatrix("789\n456\n123\n 0A"));
+            this.graphDpad = buildKeypadGraph(charMatrix(" ^A\n<v>"));
         }
 
-        private int numericalValue(String line) {
+        public long countComplexity(String input, int maxDepth) {
+            return input.lines().mapToLong(line -> {
+                var sequence = propagateInstructions(line, 0, maxDepth);
+                return sequence * numericalValue(line);
+            }).sum();
+        }
+
+        private static int numericalValue(String line) {
             return Integer.parseInt(line.replace("A", ""));
         }
 
-//        private final Map<Quad<Character, Character, Integer, Boolean>, String> propagationMemo = new HashMap<>();
-        private String propagate(char from, char to, int depth, int maxDepth, boolean horizontalFirst) {
-            horizontalFirst = avoidTheGap(from, depth == 0, horizontalFirst);
+        private long propagateInstructions(String buttons, int depth, int maxDepth) {
+            if (depth >= maxDepth)
+                return buttons.length();
 
-            var directions = getDirections(from, to, depth == 0, horizontalFirst);
-            assert directions.endsWith("A");
-            if (depth >= maxDepth - 1)
-                return directions;
+            var memoized = new Pair<>(buttons, depth);
+            var existing = outerMemo.get(memoized);
+            if (existing != null)
+                return existing;
 
-            var accumulate = new StringBuilder();
-            char previous = 'A';
-            for (char direction : directions.toCharArray()) {
-                var dh = propagate(previous, direction, depth + 1, maxDepth, true);
-                var dv = propagate(previous, direction, depth + 1, maxDepth, false);
-                previous = direction;
+            char[] from = {'A'};
+            long result = buttons.chars().mapToLong(to -> {
+                long shortest = Long.MAX_VALUE;
 
-                if (dh.length() < dv.length())
-                    accumulate.append(dh);
-                else
-                    accumulate.append(dv);
+                for (var path : getPaths(from[0], (char) to, depth == 0)) {
+                    var res = propagateInstructions(path, depth + 1, maxDepth);
+                    shortest = Math.min(shortest, res);
+                }
+                from[0] = (char) to;
+
+                return shortest;
+            }).sum();
+
+            outerMemo.put(memoized, result);
+            return result;
+        }
+
+        private List<String> getPaths(char from, char to, boolean isNumpad) {
+            var memoized = new Pair<>(from, to);
+            var existing = innerMemo.get(memoized);
+            if (existing != null)
+                return existing;
+
+            var paths = isNumpad ?
+                    graphNumpad.findEveryShortestPath(from, to) :
+                    graphDpad.findEveryShortestPath(from, to);
+
+            var result = paths.stream().map(this::pathToString).toList();
+            innerMemo.put(memoized, result);
+            return result;
+        }
+
+        private String pathToString(List<Character> path) {
+            var sb = new StringBuilder();
+
+            char from = '\0';
+            for (Character to : path) {
+                if (from != '\0')
+                    sb.append(Direction.toChar(directions.get(new Pair<>(from, to))));
+                from = to;
             }
 
-            return accumulate.toString();
+            return sb.append('A').toString();
         }
 
-        private static boolean avoidTheGap(char from, boolean isNumpad, boolean horizontalFirst) {
-            if (isNumpad) {
-                if (horizontalFirst && (from == 'A' || from == '0')) {
-                    horizontalFirst = false;
-                } else if (!horizontalFirst && "147".contains(""+ from)) {
-                    horizontalFirst = true;
-                }
-            } else {
-                if (horizontalFirst && (from == 'A' || from == '^')) {
-                    horizontalFirst = false;
-                } else if (!horizontalFirst && from == '<') {
-                    horizontalFirst = true;
-                }
-            }
-            return horizontalFirst;
+        private Graph<Character> buildKeypadGraph(Matrix<Character> matrix) {
+            var graph = new Graph<Character>();
+            matrix.iterate((from, position) -> {
+                if (from == ' ')
+                    return;
+
+                MatrixUtils.applyAdjacent(matrix, position, ch -> ch != ' ', (adjacent, direction, to) -> {
+                    directions.put(new Pair<>(from, to), direction);
+                    switch (direction) {
+                        case UP -> graph.addEdge(from, to, PRIORITY.indexOf('^'));
+                        case RIGHT -> graph.addEdge(from, to, PRIORITY.indexOf('>'));
+                        case DOWN -> graph.addEdge(from, to, PRIORITY.indexOf('v'));
+                        case LEFT -> graph.addEdge(from, to, PRIORITY.indexOf('<'));
+                    }
+                });
+            });
+
+            return graph;
         }
-
-        private final Map<Quad<Character, Character, Boolean, Boolean>, String> directionMemo = new HashMap<>();
-        private String getDirections(char from, char to, boolean isNumpad, boolean horizontalFirst) {
-            if (from == to)
-                return "A";
-
-            var quad = new Quad<>(from, to, isNumpad, horizontalFirst);
-            var memo = directionMemo.get(quad);
-            if (memo != null)
-                return memo;
-
-            var distance = getDistance(isNumpad ? NUMPAD : D_PAD, from, to);
-            var vertical = distance.y() < 0 ? "^" : "v";
-            var horizontal = distance.x() < 0 ? "<" : ">";
-
-            var directions = horizontalFirst ?
-                    buildDirectionalString(horizontal, vertical, distance.x(), distance.y()) :
-                    buildDirectionalString(vertical, horizontal, distance.y(), distance.x());
-
-            directions = directions + "A";
-            directionMemo.put(quad, directions);
-            return directions;
-        }
-
-        private static String buildDirectionalString(String first, String second, int d1, int d2) {
-            return "%s%s".formatted(first.repeat(Math.abs(d1)), second.repeat(Math.abs(d2)));
-        }
-
-        private Coordinate getDistance(char[] keypad, char from, char to) {
-            var c1 = positionOf(from, keypad);
-            var c2 = positionOf(to, keypad);
-            assert c1 != null;
-            assert c2 != null;
-            return new Coordinate(c2.y() - c1.y(), c2.x() - c1.x());
-        }
-
-
-        private Coordinate positionOf(char ch, char[] keypad) {
-
-            for (int i = 0; i < keypad.length; i++) {
-                if (keypad[i] == ch) {
-                    var position = new Coordinate(
-                            i / 3, i % 3
-                    );
-                    return position;
-                }
-            }
-
-            return null;
-        }
-
-        private static final char[] NUMPAD = {
-                '7', '8', '9',
-                '4', '5', '6',
-                '1', '2', '3',
-                ' ', '0', 'A'
-        };
-        private static final char[] D_PAD = {
-                ' ', '^', 'A',
-                '<', 'v', '>'
-        };
     }
 }
