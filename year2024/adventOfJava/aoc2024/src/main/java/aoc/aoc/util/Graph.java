@@ -21,9 +21,9 @@ public class Graph<T> {
 
     private static class Node<T> {
         T vertex;
-        double distance;
+        Number distance;
 
-        Node(T vertex, double distance) {
+        Node(T vertex, Number distance) {
             this.vertex = vertex;
             this.distance = distance;
         }
@@ -50,30 +50,30 @@ public class Graph<T> {
     }
 
     public List<T> dijkstra(T start, Predicate<T> endCondition) {
-        Map<T, Double> distances = new HashMap<>();
+        Map<T, Integer> distances = new HashMap<>();
         Map<T, T> previousNodes = new HashMap<>();
-        PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(node -> node.distance));
+        PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(
+                Comparator.comparingInt(node -> (int) node.distance)
+        );
 
         for (T node : adjacencyList.keySet()) {
-            distances.put(node, Double.POSITIVE_INFINITY);
+            distances.put(node, Integer.MAX_VALUE);
             previousNodes.put(node, null);
         }
-        distances.put(start, 0.0);
-        priorityQueue.add(new Node<>(start, 0.0));
+        distances.put(start, 0);
+        priorityQueue.add(new Node<>(start, 0));
 
         while (!priorityQueue.isEmpty()) {
             Node<T> currentNode = priorityQueue.poll();
             T current = currentNode.vertex;
 
-            if (endCondition.test(current)) {
+            if (endCondition.test(current))
                 return constructPath(previousNodes, current);
-            }
 
             for (Edge<T> edge : adjacencyList.getOrDefault(current, new ArrayList<>())) {
-                if (edge.weight.doubleValue() < 0)
-                    throw new EdgeWeightException("Edge weight should not be negative for Dijkstra's algorithm");
+                assertNonNegativeEdgeWeight(edge);
 
-                double newDist = distances.get(current) + edge.weight.doubleValue();
+                int newDist = distances.get(current) + edge.weight.intValue();
                 if (newDist < distances.get(edge.destination)) {
                     distances.put(edge.destination, newDist);
                     previousNodes.put(edge.destination, current);
@@ -83,6 +83,65 @@ public class Graph<T> {
         }
 
         return Collections.emptyList();
+    }
+
+    public List<List<List<T>>> dijkstraEveryPath(T start, Predicate<T> endCondition) {
+        Map<T, Integer> distances = new HashMap<>();
+        Map<T, List<List<T>>> paths = new HashMap<>();
+        PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(
+                Comparator.comparingInt(n -> (int) n.distance)
+        );
+
+        distances.put(start, 0);
+        paths.put(start, new ArrayList<>());
+        paths.get(start).add(new ArrayList<>(Collections.singletonList(start)));
+
+        priorityQueue.add(new Node<>(start, 0));
+
+        while (!priorityQueue.isEmpty()) {
+            Node<T> currentNode = priorityQueue.poll();
+            T current = currentNode.vertex;
+
+            if (endCondition.test(current))
+                continue;
+
+            for (Edge<T> edge : adjacencyList.getOrDefault(current, new ArrayList<>())) {
+                assertNonNegativeEdgeWeight(edge);
+
+                int newDist = (int) currentNode.distance + edge.weight.intValue();
+                if (newDist < distances.getOrDefault(edge.destination, Integer.MAX_VALUE)) {
+                    distances.put(edge.destination, newDist);
+                    paths.put(edge.destination, dijkstraEveryPathCreateNewPath(edge, paths, current));
+                    priorityQueue.add(new Node<>(edge.destination, newDist));
+                } else if (newDist == distances.getOrDefault(edge.destination, Integer.MAX_VALUE)) {
+                    paths.get(current).forEach(path -> {
+                        List<T> newPath = new ArrayList<>(path);
+                        newPath.add(edge.destination);
+                        paths.get(edge.destination).add(newPath);
+                    });
+                }
+            }
+        }
+
+        return paths.entrySet().stream()
+                .filter(e -> endCondition.test(e.getKey()))
+                .map(Map.Entry::getValue)
+                .toList();
+    }
+
+    private static <T> List<List<T>> dijkstraEveryPathCreateNewPath(
+            Edge<T> edge, Map<T, List<List<T>>> paths, T current
+    ) {
+        return new ArrayList<>(paths.get(current).stream().map(path -> {
+            List<T> newPath = new ArrayList<>(path);
+            newPath.add(edge.destination);
+            return newPath;
+        }).toList());
+    }
+
+    private static <T> void assertNonNegativeEdgeWeight(Edge<T> edge) {
+        if (edge.weight.intValue() < 0)
+            throw new EdgeWeightException("Edge weight should not be negative for Dijkstra's algorithm");
     }
 
     private List<T> constructPath(Map<T, T> previousNodes, T endNode) {
@@ -199,12 +258,6 @@ public class Graph<T> {
         }
 
         return reachableVertices;
-    }
-
-    public void printGraph() {
-        for (var vertex : adjacencyList.entrySet()) {
-            System.out.println(vertex + " -> " + adjacencyList.get(vertex.getKey()));
-        }
     }
 
     @StandardException

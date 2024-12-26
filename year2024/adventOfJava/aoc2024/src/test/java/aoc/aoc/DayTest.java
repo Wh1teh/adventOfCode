@@ -101,7 +101,7 @@ class DayTest {
             "10092", // day15
             "9021",
             "7036", // day16
-            "",
+            "45",
             "4,6,3,5,6,3,5,2,1,0", // day17
             "117440",
             "22", // day18
@@ -129,6 +129,7 @@ class DayTest {
             dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
             dayPart(11, 1), SLOW,
             dayPart(11, 2), INCOMPLETE,
+            dayPart(16, 2), SLOW,
             dayPart(19, 2), INCOMPLETE
     );
 

@@ -112,10 +112,6 @@ public class Day06 extends AbstractDay {
             return graph.countCycles();
         }
 
-        public void printGraph(){
-            graph.printGraph();
-        }
-
         public boolean blockingCurrentPositionResultsInCloseLoop() {
             boolean result = false;
 
