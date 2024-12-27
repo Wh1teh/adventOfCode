@@ -14,13 +14,21 @@ public class MemoizeValidator {
                 continue;
 
             int modifiers = method.getModifiers();
-            if (!(Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
+            if (illegalMethodModifierConfiguration(modifiers))
                 throw new IllegalStateException(buildExceptionMessage(method));
         }
     }
 
+    private static boolean illegalMethodModifierConfiguration(int modifiers) {
+        return notPublicOrProtected(modifiers) || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers);
+    }
+
+    private static boolean notPublicOrProtected(int modifiers) {
+        return !(Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers));
+    }
+
     private static String buildExceptionMessage(Method method) {
-        return "@%s annotation can only be applied to public or private methods: %s"
+        return "@%s annotation can only be applied to non-static public or private methods: %s"
                 .formatted(
                         Memoize.class.getName(),
                         "%s#%s".formatted(method.getDeclaringClass().getName(), method.getName())
