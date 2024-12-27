@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
 import aoc.aoc.util.*;
 import lombok.experimental.Accessors;

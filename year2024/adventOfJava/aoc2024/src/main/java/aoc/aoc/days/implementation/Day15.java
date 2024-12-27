@@ -1,5 +1,6 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.enums.Part;
 import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Coordinate;
 import aoc.aoc.util.Direction;
@@ -10,8 +11,8 @@ import lombok.experimental.Accessors;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static aoc.aoc.days.Part.PART_1;
-import static aoc.aoc.days.Part.PART_2;
+import static aoc.aoc.days.enums.Part.PART_1;
+import static aoc.aoc.days.enums.Part.PART_2;
 
 public class Day15 extends AbstractDay {
 

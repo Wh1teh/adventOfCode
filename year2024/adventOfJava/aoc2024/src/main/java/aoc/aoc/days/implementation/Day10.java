@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
 import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Coordinate;
@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static aoc.aoc.days.Part.PART_1;
-import static aoc.aoc.days.Part.PART_2;
+import static aoc.aoc.days.enums.Part.PART_1;
+import static aoc.aoc.days.enums.Part.PART_2;
 import static aoc.aoc.util.StringMatrix.matrix;
 
 public class Day10 extends AbstractDay {

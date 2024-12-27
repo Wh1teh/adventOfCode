@@ -2,6 +2,8 @@ package aoc.aoc;
 
 import aoc.aoc.benchmark.Benchmarks;
 import aoc.aoc.days.*;
+import aoc.aoc.days.enums.Part;
+import aoc.aoc.days.interfaces.Day;
 import aoc.aoc.testutils.DayParameter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;

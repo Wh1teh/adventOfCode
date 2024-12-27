@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.interfaces;
 
 public interface Day extends Cloneable {
 

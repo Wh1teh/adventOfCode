@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
 import aoc.aoc.solver.AbstractSolver;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static aoc.aoc.days.Part.PART_1;
-import static aoc.aoc.days.Part.PART_2;
+import static aoc.aoc.days.enums.Part.PART_1;
+import static aoc.aoc.days.enums.Part.PART_2;
 import static aoc.aoc.util.Utils.isEven;
 
 public class Day09 extends AbstractDay {

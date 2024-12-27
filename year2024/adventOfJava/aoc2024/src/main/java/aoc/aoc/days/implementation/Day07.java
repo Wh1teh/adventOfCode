@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;

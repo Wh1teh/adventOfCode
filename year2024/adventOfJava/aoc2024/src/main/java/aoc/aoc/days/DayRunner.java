@@ -1,7 +1,10 @@
 package aoc.aoc.days;
 
 import aoc.aoc.benchmark.*;
+import aoc.aoc.days.enums.Part;
 import aoc.aoc.days.exception.DayNumberException;
+import aoc.aoc.days.implementation.AbstractDay;
+import aoc.aoc.days.interfaces.DaySpecifier;
 import lombok.*;
 
 import java.io.IOException;
@@ -10,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-import static aoc.aoc.days.Part.PART_1;
+import static aoc.aoc.days.enums.Part.PART_1;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

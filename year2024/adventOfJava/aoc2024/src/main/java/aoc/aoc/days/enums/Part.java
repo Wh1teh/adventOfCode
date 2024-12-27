@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.enums;
 
 public enum Part {
     PART_1,

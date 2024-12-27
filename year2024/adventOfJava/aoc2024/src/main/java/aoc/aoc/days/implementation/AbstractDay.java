@@ -1,4 +1,8 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
+
+import aoc.aoc.days.interfaces.Day;
+import aoc.aoc.days.interfaces.DaySpecifier;
+import aoc.aoc.days.enums.Part;
 
 public abstract class AbstractDay implements Day, DaySpecifier {
 

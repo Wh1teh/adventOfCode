@@ -1,5 +1,6 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.enums.Part;
 import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Utils;
 import lombok.AllArgsConstructor;

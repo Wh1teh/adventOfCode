@@ -1,4 +1,4 @@
-package aoc.aoc.days;
+package aoc.aoc.days.implementation;
 
 import aoc.aoc.cache.Memoize;
 import aoc.aoc.util.*;
