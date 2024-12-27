@@ -1,7 +1,9 @@
 package aoc.aoc.util;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class Utils {
@@ -42,5 +44,23 @@ public class Utils {
     public static String toStringStripBracketsAndWhiteSpace(Object object) {
         return object.toString()
                 .replaceAll("[\\[\\]\\s]", "");
+    }
+
+    public static <T> List<T> listAdd(List<T> list, T element) {
+        list.add(element);
+        return list;
+    }
+
+    public static <T> void trailingIteration(Iterable<T> iterable, BiConsumer<T, T> consumer) {
+        var iterator = iterable.iterator();
+        if (!iterator.hasNext())
+            return;
+
+        T previous = iterator.next();
+        while (iterator.hasNext()) {
+            T next = iterator.next();
+            consumer.accept(previous, next);
+            previous = next;
+        }
     }
 }

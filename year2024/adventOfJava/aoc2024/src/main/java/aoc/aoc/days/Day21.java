@@ -23,22 +23,22 @@ public class Day21 extends AbstractDay {
 
         private static final String PRIORITY = " <v>^A";
 
-        private final Graph<Character> graphNumpad;
-        private final Graph<Character> graphDpad;
+        private final Graph<Character> keypadGraph;
 
         private final Map<Pair<Character, Character>, Direction> directions = new HashMap<>();
 
-        private final Map<Pair<String, Integer>, Long> outerMemo = new HashMap<>();
-        private final Map<Pair<Character, Character>, List<String>> innerMemo = new HashMap<>();
+        private final Map<Pair<List<Character>, Integer>, Long> outerMemo = new HashMap<>();
+        private final Map<Pair<Character, Character>, List<List<Character>>> innerMemo = new HashMap<>();
 
         public KeypadMadness() {
-            this.graphNumpad = buildKeypadGraph(charMatrix("789\n456\n123\n 0A"));
-            this.graphDpad = buildKeypadGraph(charMatrix(" ^A\n<v>"));
+            var numpadGraph = buildKeypadGraph(charMatrix("789\n456\n123\n 0A"), new Graph<>());
+            this.keypadGraph = buildKeypadGraph(charMatrix(" ^A\n<v>"), numpadGraph);
         }
 
         public long countComplexity(String input, int maxDepth) {
             return input.lines().mapToLong(line -> {
-                var sequence = propagateInstructions(line, 0, maxDepth);
+                var characterList = line.chars().mapToObj(c -> (char) c).toList();
+                var sequence = propagateInstructions(characterList, 0, maxDepth);
                 return sequence * numericalValue(line);
             }).sum();
         }
@@ -47,9 +47,9 @@ public class Day21 extends AbstractDay {
             return Integer.parseInt(line.replace("A", ""));
         }
 
-        private long propagateInstructions(String buttons, int depth, int maxDepth) {
+        private long propagateInstructions(List<Character> buttons, int depth, int maxDepth) {
             if (depth >= maxDepth)
-                return buttons.length();
+                return buttons.size();
 
             var memoized = new Pair<>(buttons, depth);
             var existing = outerMemo.get(memoized);
@@ -57,14 +57,14 @@ public class Day21 extends AbstractDay {
                 return existing;
 
             char[] from = {'A'};
-            long result = buttons.chars().mapToLong(to -> {
+            long result = buttons.stream().mapToLong(to -> {
                 long shortest = Long.MAX_VALUE;
 
-                for (var path : getPaths(from[0], (char) to, depth == 0)) {
+                for (var path : getPaths(from[0], to)) {
                     var res = propagateInstructions(path, depth + 1, maxDepth);
                     shortest = Math.min(shortest, res);
                 }
-                from[0] = (char) to;
+                from[0] = to;
 
                 return shortest;
             }).sum();
@@ -73,48 +73,40 @@ public class Day21 extends AbstractDay {
             return result;
         }
 
-        private List<String> getPaths(char from, char to, boolean isNumpad) {
+        private List<List<Character>> getPaths(char from, char to) {
             var memoized = new Pair<>(from, to);
             var existing = innerMemo.get(memoized);
             if (existing != null)
                 return existing;
 
-            var paths = isNumpad ?
-                    graphNumpad.findEveryShortestPath(from, to) :
-                    graphDpad.findEveryShortestPath(from, to);
+            var paths = keypadGraph.findEveryShortestPath(from, to);
 
-            var result = paths.stream().map(this::pathToString).toList();
+            var result = paths.stream().map(this::transformToDirections).toList();
             innerMemo.put(memoized, result);
             return result;
         }
 
-        private String pathToString(List<Character> path) {
-            var sb = new StringBuilder();
+        private List<Character> transformToDirections(List<Character> path) {
+            List<Character> sb = new ArrayList<>();
 
-            char from = '\0';
-            for (Character to : path) {
-                if (from != '\0')
-                    sb.append(Direction.toChar(directions.get(new Pair<>(from, to))));
-                from = to;
-            }
+            Utils.trailingIteration(path, (from, to) -> sb.add(
+                    Direction.toChar(directions.get(new Pair<>(from, to)))
+            ));
 
-            return sb.append('A').toString();
+            return Utils.listAdd(sb, 'A');
         }
 
-        private Graph<Character> buildKeypadGraph(Matrix<Character> matrix) {
-            var graph = new Graph<Character>();
+        private Graph<Character> buildKeypadGraph(Matrix<Character> matrix, Graph<Character> graph) {
             matrix.iterate((from, position) -> {
                 if (from == ' ')
                     return;
 
-                MatrixUtils.applyAdjacent(matrix, position, ch -> ch != ' ', (adjacent, direction, to) -> {
+                MatrixUtils.applyAdjacent(matrix, position, (direction, to) -> {
+                    if (to == ' ')
+                        return;
+
                     directions.put(new Pair<>(from, to), direction);
-                    switch (direction) {
-                        case UP -> graph.addEdge(from, to, PRIORITY.indexOf('^'));
-                        case RIGHT -> graph.addEdge(from, to, PRIORITY.indexOf('>'));
-                        case DOWN -> graph.addEdge(from, to, PRIORITY.indexOf('v'));
-                        case LEFT -> graph.addEdge(from, to, PRIORITY.indexOf('<'));
-                    }
+                    graph.addEdge(from, to, PRIORITY.indexOf(Direction.toChar(direction)));
                 });
             });
 

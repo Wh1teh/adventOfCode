@@ -142,6 +142,27 @@ public class MatrixUtils {
             action.accept(new Coordinate(y, x), direction, ch);
     }
 
+    public static <T> void applyAdjacent(
+            Matrix<T> matrix, Coordinate position,
+            BiConsumer<Direction, T> action
+    ) {
+        applyTo(matrix, position.y() - 1, position.x(), action, Direction.UP);
+        applyTo(matrix, position.y(), position.x() - 1, action, Direction.LEFT);
+        applyTo(matrix, position.y() + 1, position.x(), action, Direction.DOWN);
+        applyTo(matrix, position.y(), position.x() + 1, action, Direction.RIGHT);
+    }
+
+    private static <T> void applyTo(
+            Matrix<T> matrix, int y, int x,
+            BiConsumer<Direction, T> action,
+            Direction direction
+    ) {
+        if (notWithinMatrix(y, x, matrix))
+            return;
+
+        action.accept(direction, matrix.get(y, x));
+    }
+
     public static <T> void applyAdjacentIncludeOutOfBounds(
             Matrix<T> matrix, Coordinate position,
             Predicate<T> predicate,
