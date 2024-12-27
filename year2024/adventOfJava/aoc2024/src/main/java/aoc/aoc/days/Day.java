@@ -1,12 +1,10 @@
 package aoc.aoc.days;
 
-import java.io.IOException;
-
 public interface Day extends Cloneable {
 
-    DayResult sample(int part) throws IOException;
+    String part1(String input);
 
-    DayResult part(int part) throws IOException;
+    String part2(String input);
 
     String debugString();
 

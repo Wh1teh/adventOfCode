@@ -1,15 +1,10 @@
 package aoc.aoc;
 
 import aoc.aoc.benchmark.Benchmarks;
-import aoc.aoc.days.AbstractDay;
-import aoc.aoc.days.Day;
-import aoc.aoc.days.DayResult;
-import aoc.aoc.benchmark.WithBenchmarks;
+import aoc.aoc.days.*;
 import aoc.aoc.testutils.DayParameter;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -17,12 +12,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -35,39 +27,39 @@ class DayTest {
 
     private static final boolean BENCHMARKS_ENABLED = true;
 
-    @DisplayName("Read methods in abstract Day should read from classpath correctly")
-    @Test
-    @SneakyThrows
-    void dayShouldReadFiles() {
-        var resource = Objects.requireNonNull(
-                DayTest.class.getClassLoader().getResource("daydata"),
-                "'daydata' folder not found in classpath"
-        );
-        var path = Paths.get(resource.toURI()).toString();
-        String sampleString = "testing sample input";
-        String inputString = "testing actual input";
-
-        Files.writeString(Paths.get(path, "day42_0"), sampleString);
-        Files.writeString(Paths.get(path, "day42_1"), inputString);
-
-        Day day = new AbstractDay(42) {
-
-            @Override
-            protected String part1Impl(String input) {
-                return input;
-            }
-
-            @Override
-            protected String part2Impl(String input) {
-                return input;
-            }
-        };
-
-        assertTrue(day.sample(1).output().contains(sampleString));
-        assertTrue(day.sample(2).output().contains(sampleString));
-        assertTrue(day.part(1).output().contains(inputString));
-        assertTrue(day.part(2).output().contains(inputString));
-    }
+//    @DisplayName("Read methods in abstract Day should read from classpath correctly")
+//    @Test
+//    @SneakyThrows
+//    void dayShouldReadFiles() {
+//        var resource = Objects.requireNonNull(
+//                DayTest.class.getClassLoader().getResource("daydata"),
+//                "'daydata' folder not found in classpath"
+//        );
+//        var path = Paths.get(resource.toURI()).toString();
+//        String sampleString = "testing sample input";
+//        String inputString = "testing actual input";
+//
+//        Files.writeString(Paths.get(path, "day42_0"), sampleString);
+//        Files.writeString(Paths.get(path, "day42_1"), inputString);
+//
+//        Day day = new AbstractDay(42) {
+//
+//            @Override
+//            protected String part1Impl(String input) {
+//                return input;
+//            }
+//
+//            @Override
+//            protected String part2Impl(String input) {
+//                return input;
+//            }
+//        };
+//
+//        assertTrue(day.sample(1).output().contains(sampleString));
+//        assertTrue(day.sample(2).output().contains(sampleString));
+//        assertTrue(day.part(1).output().contains(inputString));
+//        assertTrue(day.part(2).output().contains(inputString));
+//    }
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
             "11", // day01
@@ -151,28 +143,19 @@ class DayTest {
         testDay(day.day(), day.part(), sampleAnswer);
     }
 
-    private static void testDay(int dayNumber, int part, String sampleAnswer) {
-        Day day = null;
-        try {
-            day = createDay(dayNumber);
-        } catch (Exception e) {
-            Assertions.fail("Day%02d does not exist".formatted(dayNumber), e);
-        }
+    private static void testDay(int dayNumber, int part, String sampleExpected) {
+        var runner = new DayRunner().withBenchmarks(BENCHMARKS_ENABLED);
 
         try {
-            assertEquals(sampleAnswer, day.sample(part).output());
-            writeDebug(dayNumber, part, true, day);
+            var sampleActual = runner.runDay(dayNumber, Part.of(part), DayRunner.RunType.SAMPLE).output();
+            assertEquals(sampleExpected, sampleActual);
         } catch (IOException e) {
             Assertions.fail("Could not read file for Day%02d part%d sample".formatted(dayNumber, part), e);
         }
 
         DayResult result = null;
         try {
-            if (BENCHMARKS_ENABLED)
-                ((WithBenchmarks) day).enableBenchmarks();
-
-            result = day.part(part);
-            writeDebug(dayNumber, part, false, day);
+            result = runner.runDay(dayNumber, Part.of(part), DayRunner.RunType.ACTUAL);
         } catch (IOException e) {
             Assertions.fail("Could not read file for Day%02d part%d input".formatted(dayNumber, part), e);
         }
@@ -203,14 +186,6 @@ class DayTest {
                                 e.getValue().duration().toNanos() / 1_000_000.0
                         )
                 ).collect(Collectors.joining(" | "));
-    }
-
-    private static Day createDay(int dayNumber) throws Exception {
-        String className = String.format("%s.Day%02d", Day.class.getPackageName(), dayNumber);
-        Class<?> dayClass = Class.forName(className);
-        Object dayInstance = dayClass.getDeclaredConstructor().newInstance();
-
-        return (Day) dayInstance;
     }
 
     @SneakyThrows
