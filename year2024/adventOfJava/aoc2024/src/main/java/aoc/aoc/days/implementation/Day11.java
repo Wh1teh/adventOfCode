@@ -1,6 +1,6 @@
 package aoc.aoc.days.implementation;
 
-import aoc.aoc.solver.AbstractSolver;
+import aoc.aoc.cache.Memoize;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -11,91 +11,69 @@ public class Day11 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return "" + new Blinker(input)
-                .countStonesWith(25);
+        return "" + countStonesAfterBlinks(input, 25);
     }
 
     @Override
     protected String part2Impl(String input) {
-        return "" + new Blinker(input)
-                .countStonesWith(75);
+        return "" + countStonesAfterBlinks(input, 75);
     }
 
+    private static final BigInteger MULTIPLIER = BigInteger.valueOf(2024L);
 
-    private static class Blinker extends AbstractSolver<Blinker> {
+    private long countStonesAfterBlinks(String input, int blinks) {
+        long totalStones = 0L;
 
-        private static final BigInteger MULTIPLIER = BigInteger.valueOf(2024L);
-
-        private final List<String> stones;
-        private final Map<String, List<List<String>>> knownAnswers = new HashMap<>();
-
-        public Blinker(String input) {
-            this.stones = new ArrayList<>(Arrays.asList(input.trim().split(" ")));
+        for (var stone : parseStones(input)) {
+            var result = processStone(stone, blinks);
+            totalStones += result;
         }
 
-        public int countStonesWith(int blinks) {
-            for (int i = 0; i < blinks; i++) {
-                blink();
-            }
+        return totalStones;
+    }
 
-            return stones.size();
+    @Memoize
+    protected long processStone(String stone, int depth) {
+        if (depth <= 0)
+            return 1L;
+
+        long accumulated = 0;
+        for (var s : resultingInStonesAfterBlink(stone)) {
+            accumulated += processStone(s, depth - 1);
         }
 
-        private final Map<String, List<String>> known = new HashMap<>();
+        return accumulated;
+    }
 
-        private void blink() {
-            for (int i = 0; i < stones.size(); i++) {
-                var stone = stones.get(i);
-                if (stone.equals("0")) {
-                    stones.set(i, "1");
-                } else if (isEven(stone.length())) {
-                    var halfLen = stone.length() / 2;
-                    var firstHalf = stone.substring(0, halfLen);
-                    var secondHalf = stone.substring(halfLen);
-                    stones.set(i, parseNumbersFromRight(secondHalf));
-                    stones.add(i++, firstHalf);
-                } else {
-                    stones.set(i, "" + new BigInteger(stone).multiply(MULTIPLIER));
-                }
-            }
+    protected List<String> resultingInStonesAfterBlink(String stone) {
+        if (stone.equals("0")) {
+            return Collections.singletonList("1");
+        } else if (isEven(stone.length())) {
+            var midPoint = stone.length() / 2;
+            var firstHalf = stone.substring(0, midPoint);
+            var secondHalf = parseNumbersFromRight(stone.substring(midPoint));
+            return List.of(firstHalf, secondHalf);
+        } else {
+            return Collections.singletonList(new BigInteger(stone).multiply(MULTIPLIER).toString());
+        }
+    }
+
+    private String parseNumbersFromRight(String number) {
+        var sb = new StringBuilder();
+
+        boolean leadingZeroes = true;
+        for (int i = 0; i < number.length(); i++) {
+            if (leadingZeroes && number.charAt(i) != '0')
+                leadingZeroes = false;
+            if (leadingZeroes && number.charAt(i) == '0')
+                continue;
+            sb.append(number.charAt(i));
         }
 
-        private void processStone(String stone, int depth) {
-            if (depth <= 0 || known.containsKey(stone))
-                return;
+        return sb.isEmpty() ? "0" : sb.toString();
+    }
 
-            var result = getResult(stone);
-            known.put(stone, result);
-            for (var s : result)
-                processStone(s, depth - 1);
-        }
-
-        private String parseNumbersFromRight(String number) {
-            var sb = new StringBuilder();
-
-            boolean leadingZeroes = true;
-            for (int i = 0; i < number.length(); i++) {
-                if (leadingZeroes && number.charAt(i) != '0')
-                    leadingZeroes = false;
-                if (leadingZeroes && number.charAt(i) == '0')
-                    continue;
-                sb.append(number.charAt(i));
-            }
-
-            return sb.isEmpty() ? "0" : sb.toString();
-        }
-
-        private List<String> getResult(String stone) {
-            if (stone.equals("0")) {
-                return Collections.singletonList("1");
-            } else if (isEven(stone.length())) {
-                var midPoint = stone.length() / 2;
-                var firstHalf = stone.substring(0, midPoint);
-                var secondHalf = parseNumbersFromRight(stone.substring(midPoint));
-                return List.of(firstHalf, secondHalf);
-            } else {
-                return Collections.singletonList(new BigInteger(stone).multiply(MULTIPLIER).toString());
-            }
-        }
+    private List<String> parseStones(String input) {
+        return new ArrayList<>(Arrays.asList(input.trim().split(" ")));
     }
 }

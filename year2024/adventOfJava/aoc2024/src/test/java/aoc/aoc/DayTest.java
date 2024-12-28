@@ -85,7 +85,7 @@ class DayTest {
             "36", // day10
             "81",
             "55312", // day11
-            "",
+            "65601038650482",
             "1930", // day12
             "1206",
             "480", // day13
@@ -121,8 +121,8 @@ class DayTest {
     public static final String INCOMPLETE = "Solution is incomplete";
     static final Map<DayParameter, String> DISABLED = Map.of(
             dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
-            dayPart(11, 1), SLOW,
-            dayPart(11, 2), INCOMPLETE,
+//            dayPart(11, 1), SLOW,
+//            dayPart(11, 2), INCOMPLETE,
             dayPart(16, 2), SLOW,
             dayPart(19, 2), INCOMPLETE
     );

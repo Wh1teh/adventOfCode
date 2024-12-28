@@ -1,9 +1,9 @@
 package aoc.aoc.cache;
 
+import lombok.Data;
 import net.bytebuddy.implementation.bind.annotation.*;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +12,11 @@ public class CacheDecorator {
 
     private final Map<Identifier, Object> cache = new ConcurrentHashMap<>();
 
-    private record Identifier(Object method, Integer hash) {
+    @SuppressWarnings("ClassCanBeRecord") // Needs proper hashCode to work
+    @Data
+    private static class Identifier {
+        private final Method method;
+        private final Object[] args;
     }
 
     @SuppressWarnings("unused")
@@ -21,7 +25,7 @@ public class CacheDecorator {
                             @Origin Method method,
                             @SuperCall Callable<?> originalMethod) throws Exception {
 
-        var identifier = new Identifier(method, Arrays.hashCode(args));
+        var identifier = new Identifier(method, args);
         var memoized = cache.get(identifier);
         if (memoized != null)
             return memoized;
