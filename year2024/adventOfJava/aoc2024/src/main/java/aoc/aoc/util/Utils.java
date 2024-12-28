@@ -63,4 +63,8 @@ public class Utils {
             previous = next;
         }
     }
+
+    public static long[] arrayOf(long... longs) {
+        return longs;
+    }
 }

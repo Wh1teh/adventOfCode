@@ -2,9 +2,10 @@ package aoc.aoc.days.implementation;
 
 import aoc.aoc.cache.Memoize;
 
-import java.math.BigInteger;
 import java.util.*;
+import java.util.stream.LongStream;
 
+import static aoc.aoc.util.Utils.arrayOf;
 import static aoc.aoc.util.Utils.isEven;
 
 public class Day11 extends AbstractDay {
@@ -19,61 +20,52 @@ public class Day11 extends AbstractDay {
         return "" + countStonesAfterBlinks(input, 75);
     }
 
-    private static final BigInteger MULTIPLIER = BigInteger.valueOf(2024L);
+    private static final long MULTIPLIER = 2024L;
 
     private long countStonesAfterBlinks(String input, int blinks) {
-        long totalStones = 0L;
-
-        for (var stone : parseStones(input)) {
-            var result = processStone(stone, blinks);
-            totalStones += result;
-        }
-
-        return totalStones;
+        return streamStones(input)
+                .map(stone -> processStone(stone, blinks))
+                .sum();
     }
 
     @Memoize
-    protected long processStone(String stone, int depth) {
+    protected long processStone(long stone, int depth) {
         if (depth <= 0)
             return 1L;
 
         long accumulated = 0;
-        for (var s : resultingInStonesAfterBlink(stone)) {
+        for (var s : resultingStonesAfterBlink(stone)) {
             accumulated += processStone(s, depth - 1);
         }
 
         return accumulated;
     }
 
-    protected List<String> resultingInStonesAfterBlink(String stone) {
-        if (stone.equals("0")) {
-            return Collections.singletonList("1");
-        } else if (isEven(stone.length())) {
-            var midPoint = stone.length() / 2;
-            var firstHalf = stone.substring(0, midPoint);
-            var secondHalf = parseNumbersFromRight(stone.substring(midPoint));
-            return List.of(firstHalf, secondHalf);
-        } else {
-            return Collections.singletonList(new BigInteger(stone).multiply(MULTIPLIER).toString());
-        }
+    @SuppressWarnings("java:S1121")
+    @Memoize
+    protected long[] resultingStonesAfterBlink(long stone) {
+        int stoneLength;
+        if (stone == 0)
+            return arrayOf(1L);
+        else if (isEven(stoneLength = numberLength(stone)))
+            return splitNumber(stone, stoneLength);
+        else
+            return arrayOf(stone * MULTIPLIER);
     }
 
-    private String parseNumbersFromRight(String number) {
-        var sb = new StringBuilder();
-
-        boolean leadingZeroes = true;
-        for (int i = 0; i < number.length(); i++) {
-            if (leadingZeroes && number.charAt(i) != '0')
-                leadingZeroes = false;
-            if (leadingZeroes && number.charAt(i) == '0')
-                continue;
-            sb.append(number.charAt(i));
-        }
-
-        return sb.isEmpty() ? "0" : sb.toString();
+    private static int numberLength(long n) {
+        return (int) (Math.log10(n) + 1);
     }
 
-    private List<String> parseStones(String input) {
-        return new ArrayList<>(Arrays.asList(input.trim().split(" ")));
+    private static long[] splitNumber(long n, long length) {
+        long mid = (long) Math.pow(10, length / 2.0);
+        long right = n % mid;
+        long left = n / mid;
+        return arrayOf(left, right);
+    }
+
+    private LongStream streamStones(String input) {
+        return Arrays.stream(input.trim().split(" "))
+                .mapToLong(Long::parseLong);
     }
 }
