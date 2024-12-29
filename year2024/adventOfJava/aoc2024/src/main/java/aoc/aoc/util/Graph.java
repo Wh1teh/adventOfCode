@@ -3,11 +3,24 @@ package aoc.aoc.util;
 import lombok.experimental.StandardException;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Graph<T> {
+public class Graph<T> implements VisitableGraph<T> {
 
     private final Map<T, List<Edge<T>>> adjacencyList = new HashMap<>();
+
+    @Override
+    public <R> R acceptTraversalMethod(Function<VisitableGraph<T>, R> function) {
+        return function.apply(this);
+    }
+
+    @Override
+    public void forAdjacent(T current, Consumer<T> consumer) {
+        adjacencyList.getOrDefault(current, Collections.emptyList())
+                .forEach(adjacent -> consumer.accept(adjacent.destination));
+    }
 
     public static class Edge<T> {
         T destination;
