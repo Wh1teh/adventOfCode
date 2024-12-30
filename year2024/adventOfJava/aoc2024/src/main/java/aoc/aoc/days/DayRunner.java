@@ -38,15 +38,18 @@ public class DayRunner {
         if (dayNumber < 1 || dayNumber > 25)
             throw new DayNumberException(dayNumber);
 
+        if (benchmarks) {
+            benchmarker.requestNewBenchmark(DayBenchmarker.INSTANTIATION);
+            benchmarker.requestNewBenchmark(DayBenchmarker.FILES);
+            benchmarker.requestNewBenchmark(DayBenchmarker.IMPLEMENTATION);
+        }
+
+        benchmarker.ifWasRequested(DayBenchmarker.INSTANTIATION).start();
         var day = DayFactory.createNewDay(dayNumber);
         ((DaySpecifier) day)
                 .setSample(isSample)
                 .setPart(part);
-
-        if (benchmarks) {
-            benchmarker.requestNewBenchmark(DayBenchmarker.FILES);
-            benchmarker.requestNewBenchmark(DayBenchmarker.IMPLEMENTATION);
-        }
+        benchmarker.ifWasRequested(DayBenchmarker.INSTANTIATION).end();
 
         benchmarker.ifWasRequested(DayBenchmarker.FILES).start();
         String input = readDayData(dayNumber, isSample);

@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 
 public class DayBenchmarker implements Benchmarker {
 
+    public static final String INSTANTIATION = "Instantiation";
     public static final String FILES = "Files";
     public static final String IMPLEMENTATION = "Implementation";
 
     private static final Set<BenchmarkInfo> SUPPORTED_BENCHMARKS = Set.of(
+            BenchmarkInfo.of(INSTANTIATION, "Instantiating the day object"),
             BenchmarkInfo.of(FILES, "Reading files"),
             BenchmarkInfo.of(IMPLEMENTATION, "Running implementation")
     );
