@@ -1,5 +1,7 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.util.Utils;
+
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
@@ -13,10 +15,92 @@ public class Day24 extends AbstractDay {
 
     @Override
     protected String part2Impl(String input) {
-        return "";
+        return isSample ? "[]" : analyzeGates(input);
     }
 
     private record Rule(String w1, BinaryOperator<Boolean> gate, String w2, String resultingWire) {
+    }
+
+    private record Gate(String left, String op, String right, String result) {
+        @Override
+        public String toString() {
+            return "%s %s %s -> %s".formatted(left, op, right, result);
+        }
+    }
+
+    /**
+     * <a href="https://www.reddit.com/r/adventofcode/comments/1hla5ql/2024_day_24_part_2_a_guide_on_the_idea_behind_the/">I did not figure this out lol</a>
+     */
+    private String analyzeGates(String input) {
+        var parts = input.split("\\R{2}");
+        var gates = parseGates(parts[1]);
+
+        var sus = gates.values().stream().filter(gate ->
+                outputsZxxWithoutXor(gate)
+                        || operatesXorWithoutXY(gate)
+                        || operatesXorWithoutProperFollowUp(gate, gates)
+                        || operatesAndWithoutProperFollowUp(gate, gates)
+        ).map(g -> g.result).sorted().toList();
+
+        return Utils.toStringStripBracketsAndWhiteSpace(sus);
+    }
+
+    private static boolean operatesAndWithoutProperFollowUp(Gate gate, Map<String, Gate> gates) {
+        return gate.op.contains("AND") && isXY(gate) && notFirstXY(gate) && gates.values().stream().noneMatch(next ->
+                next.op.equals("OR") && gateContainsPreviousResultAsInput(gate, next));
+    }
+
+    private static boolean operatesXorWithoutProperFollowUp(Gate gate, Map<String, Gate> gates) {
+        return isXOR(gate) && isXY(gate) && notFirstXY(gate) && gates.values().stream().noneMatch(next ->
+                isXOR(next) && gateContainsPreviousResultAsInput(gate, next));
+    }
+
+    private static boolean operatesXorWithoutXY(Gate gate) {
+        return !isZ(gate) && !isXY(gate) && isXOR(gate);
+    }
+
+    private static boolean outputsZxxWithoutXor(Gate gate) {
+        return isZ(gate) && !isXOR(gate) && !gate.result.equals("z45");
+    }
+
+    private static boolean notFirstXY(Gate gate) {
+        return !gate.left.contains("00") || !gate.right.contains("00");
+    }
+
+    private static boolean gateContainsPreviousResultAsInput(Gate gate, Gate it) {
+        return it.left.equals(gate.result) || it.right.equals(gate.result);
+    }
+
+    private static boolean isXY(Gate gate) {
+        var l = gate.left.charAt(0);
+        var r = gate.right.charAt(0);
+        return !(l != 'x' && l != 'y') && !(r != 'x' && r != 'y');
+    }
+
+    private static boolean isXOR(Gate gate) {
+        return gate.op.equals("XOR");
+    }
+
+    private static boolean isZ(Gate gate) {
+        return gate.result.charAt(0) == 'z';
+    }
+
+    private Map<String, Gate> parseGates(String input) {
+        Map<String, Gate> gates = new HashMap<>();
+
+        input.lines().forEach(line -> {
+            var parts = line.split(" ");
+
+            var w1 = parts[0];
+            var gate = parts[1];
+            var w2 = parts[2];
+            var resultingWire = parts[4];
+
+            assert !gates.containsKey(resultingWire);
+            gates.put(resultingWire, new Gate(w1, gate, w2, resultingWire));
+        });
+
+        return gates;
     }
 
     private long processGates(String input) {
