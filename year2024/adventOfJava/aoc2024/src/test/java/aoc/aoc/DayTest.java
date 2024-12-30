@@ -120,7 +120,7 @@ class DayTest {
     public static final String SLOW = "Solution is working but slow";
     public static final String INCOMPLETE = "Solution is incomplete";
     static final Map<DayParameter, String> DISABLED = Map.of(
-            dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
+//            dayPart(6, 2), SAMPLE_WORKS_INPUT_DOES_NOT,
 //            dayPart(11, 1), SLOW,
 //            dayPart(11, 2), INCOMPLETE,
             dayPart(16, 2), SLOW

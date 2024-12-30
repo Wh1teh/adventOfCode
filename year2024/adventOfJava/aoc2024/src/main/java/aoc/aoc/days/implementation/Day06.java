@@ -1,200 +1,107 @@
 package aoc.aoc.days.implementation;
 
-import aoc.aoc.util.Coordinate;
-import aoc.aoc.util.Graph;
-import lombok.Getter;
-import lombok.experimental.Accessors;
+import aoc.aoc.util.*;
+import lombok.experimental.StandardException;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static aoc.aoc.util.Utils.replaceChartAt;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Day06 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        var guard = new Guard(input.lines().toList());
-
-        var distinctPositions = new HashSet<>(Set.of(guard.position()));
-        Coordinate position;
-        while (true) {
-            position = guard.move();
-
-            if (position == null)
-                break;
-            else
-                distinctPositions.add(position);
-        }
-
-        return "" + distinctPositions.size();
+        return "" + getListOfVisited(GenericMatrix.charMatrix(input))
+                .stream().map(Position::position)
+                .collect(Collectors.toSet())
+                .size();
     }
 
     @Override
     protected String part2Impl(String input) {
-        var guard = new Guard(new ArrayList<>(input.lines().toList()));
-
-        var loopingPositions = new HashSet<Coordinate>();
-        Coordinate position;
-        while(true) {
-            position = guard.move();
-            if (position == null)
-                break;
-            else {
-                if (guard.blockingCurrentPositionResultsInCloseLoop())
-                    loopingPositions.add(position);
-            }
-        }
-
-        return "" + loopingPositions.size();
+        return "" + countCycleCausingPositions(GenericMatrix.charMatrix(input));
     }
 
-    @Accessors(fluent = true)
-    private static class Guard {
+    private static final Set<Character> GUARD_CHARACTERS = Set.of('^', 'v', '<', '>');
+    private static final char WALL = '#';
+    public static final char FLOOR = '.';
 
-        private enum Direction {
-            UP,
-            RIGHT,
-            DOWN,
-            LEFT;
+    private record Position(Coordinate position, Direction direction) {
+    }
 
-            public static Direction getNthDirection(int n) {
-                Direction[] directions = Direction.values();
-                if (n < 0 || n >= directions.length) {
-                    throw new IllegalArgumentException("Invalid index: " + n);
-                }
-                return directions[n];
-            }
+    private static int countCycleCausingPositions(Matrix<Character> matrix) {
+        var positions = getListOfVisited(matrix);
+
+        Set<Coordinate> revisited = new HashSet<>();
+        int cyclingPositions = 0;
+        for (var current : positions) {
+            cyclingPositions += blockingCurrentPositionCausesCycle(revisited, current, matrix) ? 1 : 0;
         }
 
-        private static final char BLOCKER = '#';
-        private static final Set<Character> GUARD_CHARACTERS = Set.of('^', 'v', '<', '>');
+        return cyclingPositions;
+    }
 
-        private final Graph<Coordinate> graph = new Graph<>();
-        private final List<String> matrix;
+    private static boolean blockingCurrentPositionCausesCycle(Set<Coordinate> revisited, Position current, Matrix<Character> matrix) {
+        var next = getNextPosition(matrix, current);
+        if (next == null || hasBeenVisitedBefore(revisited, next))
+            return false;
 
-        private Direction direction;
-        @Getter
-        private Coordinate position;
+        matrix.set(next.position, WALL);
+        boolean result = willLoop(current, matrix);
+        matrix.set(next.position, FLOOR);
 
-        public Guard(List<String> matrix) {
-            this.matrix = matrix;
+        return result;
+    }
 
-            this.position = getInitialPosition();
-            this.direction = getInitialDirection();
+    private static boolean hasBeenVisitedBefore(Set<Coordinate> revisited, Position next) {
+        return !revisited.add(next.position);
+    }
+
+    private static boolean willLoop(Position current, Matrix<Character> matrix) {
+        Set<Position> visited = new HashSet<>();
+        while (visited.add(current)) {
+            current = getNextPosition(matrix, current);
+            if (current == null)
+                return false;
         }
 
-        private Guard(List<String> matrix, Direction direction, Coordinate position) {
-            this.matrix = matrix;
-            this.direction = direction;
-            this.position = position;
-        }
+        return true;
+    }
 
-        public Coordinate move() {
-            var nextPosition = getNextPosition();
+    private static List<Position> getListOfVisited(Matrix<Character> matrix) {
+        var current = findAndClearInitialPosition(matrix);
 
-            if (notWithinMap(nextPosition)) {
-                position = null;
-            } else if (isBlocker(nextPosition)) {
-                turn90Degrees();
-            } else {
-                graph.addVertex(nextPosition);
-                graph.addEdge(position, nextPosition);
-                position = nextPosition;
-            }
+        List<Position> positions = new ArrayList<>();
+        do {
+            positions.add(current);
+            current = getNextPosition(matrix, current);
+        } while (current != null);
 
-            return position;
-        }
+        return positions;
+    }
 
-        public int countCycles() {
-            return graph.countCycles();
-        }
-
-        public boolean blockingCurrentPositionResultsInCloseLoop() {
-            boolean result = false;
-
-            var nextPosition = getNextPosition();
-            if (notWithinMap(nextPosition) || isBlocker(nextPosition))
-                return result;
-
-            replaceNextPosition(nextPosition, BLOCKER);
-
-            var ghost = new Guard(matrix, direction, position);
-            ghost.turn90Degrees();
-
-            Coordinate ghostPosition;
-            var set = new HashSet<Coordinate>();
-            while (!result) {
-                ghostPosition = ghost.move();
-                if (ghostPosition == null)
-                    break;
-                else if (set.contains(ghostPosition) && isBlocker(ghost.getNextPosition())) {
-                    result = true;
-                } else
-                    set.add(ghostPosition);
-            }
-
-
-            replaceNextPosition(nextPosition, '.');
-            return result;
-        }
-
-        private void turn90Degrees() {
-            int nextOrdinal = direction.ordinal() + 1;
-            direction = Direction.getNthDirection(
-                    nextOrdinal % Direction.values().length
-            );
-        }
-
-        private Coordinate getInitialPosition() {
-            for (int i = 0; i < matrix.size(); i++) {
-                String line = matrix.get(i);
-                for (int j = 0; j < line.length(); j++) {
-                    if(GUARD_CHARACTERS.contains(line.charAt(j)))
-                        return new Coordinate(i, j);
-                }
-            }
-
+    private static Position getNextPosition(Matrix<Character> matrix, Position current) {
+        var next = new Position(MatrixUtils.nextPosition(current.position, current.direction), current.direction);
+        if (MatrixUtils.notWithinMatrix(next.position, matrix))
             return null;
-        }
 
-        private Coordinate getNextPosition() {
-            return switch (direction) {
-                case UP -> new Coordinate(position.y() - 1, position.x());
-                case DOWN -> new Coordinate(position.y() + 1, position.x());
-                case LEFT -> new Coordinate(position.y(), position.x() - 1);
-                case RIGHT -> new Coordinate(position.y(), position.x() + 1);
-            };
-        }
+        current = matrix.get(next.position) != WALL ? next : turn90Degrees(current);
+        return current;
+    }
 
-        private void replaceNextPosition(Coordinate position, char with) {
-            int y = position.y();
-            String result = replaceChartAt(matrix.get(y), position.x(), with);
-            matrix.set(y, result);
-        }
+    private static Position turn90Degrees(Position current) {
+        return new Position(current.position, Direction.rightOf(current.direction));
+    }
 
-        private Direction getInitialDirection() {
-            char ch = matrix
-                    .get(position.y())
-                    .charAt(position.x());
-            return switch (ch) {
-                case '^' -> Direction.UP;
-                case '>' -> Direction.RIGHT;
-                case 'v' -> Direction.DOWN;
-                case '<' -> Direction.LEFT;
-                default -> throw new IllegalStateException("Unexpected value: " + ch);
-            };
-        }
+    private static Position findAndClearInitialPosition(Matrix<Character> matrix) {
+        for (int row = 0; row < matrix.height(); row++)
+            for (int col = 0; col < matrix.width(); col++)
+                if (GUARD_CHARACTERS.contains(matrix.get(row, col)))
+                    return new Position(new Coordinate(row, col), Direction.getDirection(matrix.get(row, col)));
 
-        private boolean isBlocker(Coordinate coordinate) {
-            return matrix.get(coordinate.y()).charAt(coordinate.x()) == BLOCKER;
-        }
+        throw new GuardException("Could not locate guard's initial position");
+    }
 
-        private boolean notWithinMap(Coordinate position) {
-            return position.y() < 0 || position.y() >= matrix.size()
-                    || position.x() < 0 || position.x() >= matrix.getFirst().length();
-        }
+    @StandardException
+    private static class GuardException extends RuntimeException {
     }
 }
