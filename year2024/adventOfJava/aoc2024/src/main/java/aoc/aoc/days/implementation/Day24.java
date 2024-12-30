@@ -1,18 +1,14 @@
 package aoc.aoc.days.implementation;
 
-import aoc.aoc.solver.AbstractSolver;
-
-import java.math.BigInteger;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 public class Day24 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        var a = new GateHandler(input)
-                .processGates();
-        return "" + a;
+        return "" + processGates(input);
     }
 
     @Override
@@ -20,131 +16,78 @@ public class Day24 extends AbstractDay {
         return "";
     }
 
-    private static class GateHandler extends AbstractSolver<GateHandler> {
+    private record Rule(String w1, BinaryOperator<Boolean> gate, String w2, String resultingWire) {
+    }
 
-        private final Map<String, Boolean> wires;
-        private final Map<String, Boolean> results = new TreeMap<>(Comparator.reverseOrder());
-        private final Deque<Rule> rules;
+    private long processGates(String input) {
+        Map<String, Boolean> results = new TreeMap<>(Comparator.reverseOrder());
 
-        record Rule(String w1, Gate gate, String w2, String resultingWire) {
+        var parts = input.split("\\R{2}");
+        var wires = parseInitialWires(parts[0]);
+        var rules = parseRules(parts[1]);
+
+        while (!rules.isEmpty()) {
+            var rule = rules.poll();
+            if (!processGate(rule, wires, results))
+                rules.add(rule);
         }
 
-        public GateHandler(String input) {
-            var parts = input.split("\\R{2}");
-            this.wires = parseInitialWires(parts[0]);
-            this.rules = parseRules(parts[1]);
+        return parseBits(results);
+    }
+
+    private boolean processGate(Rule rule, Map<String, Boolean> wires, Map<String, Boolean> results) {
+        var w1 = wires.get(rule.w1);
+        var w2 = wires.get(rule.w2);
+        if (w1 == null || w2 == null)
+            return false;
+
+        var result = rule.gate.apply(w1, w2);
+        wires.put(rule.resultingWire, result);
+        results.put(rule.resultingWire, result);
+
+        return true;
+    }
+
+    private long parseBits(Map<String, Boolean> results) {
+        long bigint = 0L;
+        for (var e : results.entrySet()) {
+            if (e.getKey().charAt(0) != 'z')
+                break;
+
+            var b = e.getValue();
+            bigint <<= 1;
+            if (Boolean.TRUE.equals(b))
+                bigint++;
         }
 
-        private BigInteger processGates() {
-            while (!rules.isEmpty()) {
-                var rule = rules.poll();
-                if (!processGate(rule))
-                    rules.add(rule);
-            }
+        return bigint;
+    }
 
+    private Deque<Rule> parseRules(String input) {
+        return input.lines().map(line -> {
+            var parts = line.split(" ");
 
-            return parseBits(results);
-        }
+            var w1 = parts[0];
+            var gate = gateOf(parts[1].charAt(0));
+            var w2 = parts[2];
+            var resultingWire = parts[4];
 
-        private boolean processGate(Rule rule) {
-            var w1 = wires.get(rule.w1);
-            var w2 = wires.get(rule.w2);
-            if (w1 == null || w2 == null)
-                return false;
+            return new Rule(w1, gate, w2, resultingWire);
+        }).collect(Collectors.toCollection(ArrayDeque::new));
+    }
 
-            wires.put(rule.resultingWire, runGate(rule.gate, w1, w2));
-            results.put(rule.resultingWire, runGate(rule.gate, w1, w2));
+    private Map<String, Boolean> parseInitialWires(String input) {
+        return input.lines()
+                .map(line -> line.split(": "))
+                .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1].charAt(0) == '1'));
+    }
 
-            return true;
-        }
-
-        private boolean runGate(Gate gate, boolean a, boolean b) {
-            return switch (gate) {
-                case AND -> a && b;
-                case OR -> a || b;
-                case XOR -> a ^ b;
-            };
-        }
-
-        private BigInteger parseBits(Map<String, Boolean> map) {
-//            new TreeMap<>(map).forEach((k,v) -> System.out.println(k + ": " + (v.equals(Boolean.TRUE)? 1 :0)));
-            var bigint = BigInteger.ZERO;
-            var sb = new StringBuilder();
-            for(var e : map.entrySet()) {
-                if (!e.getKey().startsWith("z"))
-                    continue;
-                var b = e.getValue();
-                bigint = bigint.shiftLeft(1);
-                if (Boolean.TRUE.equals(b))
-                     bigint = bigint.add(BigInteger.ONE);
-                 else bigint = bigint.add(BigInteger.ZERO);
-
-                 sb.append(Boolean.TRUE.equals(b) ? "1" : "0");
-            }
-
-            System.out.println(sb);
-            return bigint;
-//            return map.entrySet()
-//                    .stream()
-//                    .filter(entry -> entry.getKey().startsWith("z"))
-//                    .collect(Collectors.toMap(
-//                            Map.Entry::getKey,
-//                            Map.Entry::getValue,
-//                            (e1, e2) -> e1,
-//                            TreeMap::new
-//                    )).values().stream().map(b -> Boolean.TRUE.equals(b) ? BigInteger.ONE : BigInteger.ZERO)
-//                    .reduce(BigInteger.ZERO,
-//                            (result, n) -> result.shiftLeft(1).add(n)
-//                    );
-        }
-
-        private Deque<Rule> parseRules(String input) {
-            return input.lines().map(line -> {
-                var parts = line.split(" ");
-
-                var w1 = parts[0];
-                var gate = Gate.of(parts[1].charAt(0));
-                var w2 = parts[2];
-                var resultingWire = parts[4];
-
-                return new Rule(w1, gate, w2, resultingWire);
-            }).collect(Collectors.toCollection(ArrayDeque::new));
-        }
-
-        private Map<String, Boolean> parseInitialWires(String input) {
-            return input.lines()
-                    .map(line -> line.split(": "))
-                    .collect(Collectors.toMap(
-                            parts -> parts[0], parts -> parts[1].equals("1"),
-                            (existing, __) -> existing,
-                            TreeMap::new
-                    ));
-        }
-
-//        private static class Wire {
-//
-//            final String label;
-//            boolean value;
-//
-//            Wire(String label, boolean value) {
-//                this.label = label;
-//                this.value = value;
-//            }
-//        }
-
-        private enum Gate {
-            AND,
-            OR,
-            XOR;
-
-            static Gate of(char ch) {
-                return switch (ch) {
-                    case 'A' -> AND;
-                    case 'O' -> OR;
-                    case 'X' -> XOR;
-                    default -> throw new IllegalStateException("Unexpected value: " + ch);
-                };
-            }
-        }
+    private BinaryOperator<Boolean> gateOf(char ch) {
+        return switch (ch) {
+            case 'A' -> Boolean::logicalAnd;
+            case 'O' -> Boolean::logicalOr;
+            case 'X' -> Boolean::logicalXor;
+            default -> throw new IllegalStateException("Unexpected value: " + ch);
+        };
     }
 }
