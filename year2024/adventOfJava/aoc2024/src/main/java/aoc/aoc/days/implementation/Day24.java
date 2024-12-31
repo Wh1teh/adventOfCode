@@ -36,52 +36,62 @@ public class Day24 extends AbstractDay {
         var gates = parseGates(parts[1]);
 
         var sus = gates.values().stream().filter(gate ->
-                outputsZxxWithoutXor(gate)
-                        || operatesXorWithoutXY(gate)
-                        || operatesXorWithoutProperFollowUp(gate, gates)
-                        || operatesAndWithoutProperFollowUp(gate, gates)
+                outputsZ_withoutXOR(gate)
+                        || outputsZ_withXOR_withoutInputtingXY(gate)
+                        || inputsXY_withXOR_withoutProperFollowUp(gate, gates)
+                        || outputsNonZ_inputsNonXY_withAND_withoutProperFollowUp(gate, gates)
         ).map(g -> g.result).sorted().toList();
 
+        assert sus.size() == 8;
         return Utils.toStringStripBracketsAndWhiteSpace(sus);
     }
 
-    private static boolean operatesAndWithoutProperFollowUp(Gate gate, Map<String, Gate> gates) {
-        return gate.op.contains("AND") && isXY(gate) && notFirstXY(gate) && gates.values().stream().noneMatch(next ->
-                next.op.equals("OR") && gateContainsPreviousResultAsInput(gate, next));
+    @SuppressWarnings("java:S100")
+    private static boolean outputsNonZ_inputsNonXY_withAND_withoutProperFollowUp(
+            Gate gate, Map<String, Gate> gates) {
+        return gate.op.contains("AND") && inputsXY(gate) && notFirstXY(gate)
+                && gates.values().stream().noneMatch(
+                next -> next.op.equals("OR") && gateContainsPreviousResultAsInput(gate, next)
+        );
     }
 
-    private static boolean operatesXorWithoutProperFollowUp(Gate gate, Map<String, Gate> gates) {
-        return isXOR(gate) && isXY(gate) && notFirstXY(gate) && gates.values().stream().noneMatch(next ->
-                isXOR(next) && gateContainsPreviousResultAsInput(gate, next));
+    @SuppressWarnings("java:S100")
+    private static boolean inputsXY_withXOR_withoutProperFollowUp(Gate gate, Map<String, Gate> gates) {
+        return isXOR(gate) && inputsXY(gate) && notFirstXY(gate)
+                && gates.values().stream().noneMatch(
+                next -> isXOR(next) && gateContainsPreviousResultAsInput(gate, next)
+        );
     }
 
-    private static boolean operatesXorWithoutXY(Gate gate) {
-        return !isZ(gate) && !isXY(gate) && isXOR(gate);
+    @SuppressWarnings("java:S100")
+    private static boolean outputsZ_withXOR_withoutInputtingXY(Gate gate) {
+        return !outputsZ(gate) && !inputsXY(gate) && isXOR(gate);
     }
 
-    private static boolean outputsZxxWithoutXor(Gate gate) {
-        return isZ(gate) && !isXOR(gate) && !gate.result.equals("z45");
+    @SuppressWarnings("java:S100")
+    private static boolean outputsZ_withoutXOR(Gate gate) {
+        return outputsZ(gate) && !isXOR(gate) && !gate.result.equals("z45");
     }
 
-    private static boolean notFirstXY(Gate gate) {
-        return !gate.left.contains("00") || !gate.right.contains("00");
-    }
-
-    private static boolean gateContainsPreviousResultAsInput(Gate gate, Gate it) {
-        return it.left.equals(gate.result) || it.right.equals(gate.result);
-    }
-
-    private static boolean isXY(Gate gate) {
-        var l = gate.left.charAt(0);
-        var r = gate.right.charAt(0);
-        return !(l != 'x' && l != 'y') && !(r != 'x' && r != 'y');
+    private static boolean gateContainsPreviousResultAsInput(Gate previous, Gate current) {
+        return current.left.equals(previous.result) || current.right.equals(previous.result);
     }
 
     private static boolean isXOR(Gate gate) {
         return gate.op.equals("XOR");
     }
 
-    private static boolean isZ(Gate gate) {
+    private static boolean notFirstXY(Gate gate) {
+        return !gate.left.contains("00") || !gate.right.contains("00");
+    }
+
+    private static boolean inputsXY(Gate gate) {
+        var l = gate.left.charAt(0);
+        var r = gate.right.charAt(0);
+        return !(l != 'x' && l != 'y') && !(r != 'x' && r != 'y');
+    }
+
+    private static boolean outputsZ(Gate gate) {
         return gate.result.charAt(0) == 'z';
     }
 
@@ -134,15 +144,9 @@ public class Day24 extends AbstractDay {
 
     private long parseBits(Map<String, Boolean> results) {
         long bigint = 0L;
-        for (var e : results.entrySet()) {
-            if (e.getKey().charAt(0) != 'z')
-                break;
-
-            var b = e.getValue();
-            bigint <<= 1;
-            if (Boolean.TRUE.equals(b))
-                bigint++;
-        }
+        for (var e : results.entrySet())
+            if (e.getKey().charAt(0) == 'z')
+                bigint = (bigint << 1) + (Boolean.TRUE.equals(e.getValue()) ? 1L : 0L);
 
         return bigint;
     }
