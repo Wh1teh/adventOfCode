@@ -1,18 +1,15 @@
 package aoc.aoc.days.implementation;
 
-import aoc.aoc.solver.AbstractSolver;
 import aoc.aoc.util.Utils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntUnaryOperator;
 
 public class Day22 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        return "" + new SecretNumberCounter(input)
-                .getNthSecretForEach()
+        return "" + getNthSecretForEach(input)
                 .stream().mapToLong(Long::valueOf).sum();
     }
 
@@ -25,102 +22,92 @@ public class Day22 extends AbstractDay {
                     3
                     2024""";
 
-        return "" + new SecretNumberCounter(input)
-                .getMostBananasPossible();
+        return "" + getMostBananasPossible(input);
     }
 
-    private static class SecretNumberCounter extends AbstractSolver<SecretNumberCounter> {
+    private static final int ROUNDS = 2000;
+    private static final int LEAST_5_BITS = 0b11111;
 
-        private static final int ROUNDS = 2000;
-        public static final int LEAST_5_BITS = 0b11111;
-        public static final int LEAST_20_BITS = 0xfffff;
-        private final List<Integer> secrets;
-
-        public SecretNumberCounter(String input) {
-            this.secrets = input.lines().map(Integer::parseInt).toList();
-        }
-
-        public List<Integer> getNthSecretForEach() {
-            return secrets.stream().map(secret -> {
-                for (int i = 0; i < ROUNDS; i++) {
-                    secret = doAllOperations(secret);
-                }
-                return secret;
-            }).toList();
-        }
-
-        @SuppressWarnings("java:S117")
-        public int getMostBananasPossible() {
-            var differences = accumulateBananasForSequences(secrets);
-            return getLargestAccumulation(differences);
-        }
-
-        private static Map<Integer, Integer> accumulateBananasForSequences(List<Integer> secrets) {
-            Map<Integer, Integer> differences = new ConcurrentHashMap<>();
-
-            Utils.forEachWithExecutorService(secrets,
-                    secret -> accumulateBananaSequencesForSecret(secret, differences)
-            );
-
-            return differences;
-        }
-
-        private static void accumulateBananaSequencesForSecret(Integer secret, Map<Integer, Integer> differences) {
-            Set<Integer> encountered = new HashSet<>();
-            int sequence = 0;
-
-            int previous = -1 * lastDigit(secret);
+    private static List<Integer> getNthSecretForEach(String input) {
+        return parseSecrets(input).stream().map(secret -> {
             for (int i = 0; i < ROUNDS; i++) {
                 secret = doAllOperations(secret);
-                int lastDigit = lastDigit(secret);
-                byte differenceToPrevious = (byte) (previous - lastDigit);
-                previous = lastDigit;
+            }
+            return secret;
+        }).toList();
+    }
 
-                sequence = queueDifferenceToSequence(sequence, differenceToPrevious);
-                if (!encountered.contains(sequence)) {
-                    encountered.add(sequence);
+    @SuppressWarnings("java:S117")
+    public static int getMostBananasPossible(String input) {
+        var sequences = accumulateBananasForSequences(parseSecrets(input));
+        return Arrays.stream(sequences).max().orElse(-1);
+    }
 
-                    differences.merge(sequence, lastDigit, Integer::sum);
-                }
+    private static int[] accumulateBananasForSequences(List<Integer> secrets) {
+        int[] sequences = new int[19 * 19 * 19 * 19];
+
+        Utils.forEachWithExecutorService(secrets,
+                secret -> accumulateBananaSequencesForSecret(secret, sequences)
+        );
+
+        return sequences;
+    }
+
+    /**
+     * Decided to unroll a bunch of stuff because method calls slowed everything down by a lot,
+     * and that is why this method exceptionally has comments
+     */
+    private static void accumulateBananaSequencesForSecret(int secret, int[] sequences) {
+        int sequence = 0;
+        // This wastes a lot of memory compared to a set, but it's also way faster
+        boolean[] visited = new boolean[19 * 19 * 19 * 19];
+
+        int previousDigit = secret % 10;
+        for (int i = 0; i < ROUNDS; i++) {
+            // this::doAllOperations unrolled
+            secret = ((secret << 6) ^ secret) & 0xffffff;
+            secret = ((secret >> 5) ^ secret) & 0xffffff;
+            secret = ((secret << 11) ^ secret) & 0xffffff;
+
+            int currentDigit = secret % 10;
+            // Can store sequence in a queue of 20 bits
+            sequence = (sequence >> 5) + ((currentDigit - previousDigit + 9) << 15);
+            previousDigit = currentDigit;
+
+            // add to result "map" if the local "set" doesn't contain sequence
+            int a = sequence >> 15;
+            int b = sequence >> 10 & LEAST_5_BITS;
+            int c = sequence >> 5 & LEAST_5_BITS;
+            int d = sequence & LEAST_5_BITS;
+            int index = a * (19 * 19 * 19) + b * (19 * 19) + c * 19 + d;
+            if (!visited[index]) {
+                visited[index] = true;
+                sequences[index] += currentDigit;
             }
         }
+    }
 
-        private static int queueDifferenceToSequence(int sequence, byte differenceToPrevious) {
-            return ((sequence << 5) | (differenceToPrevious & LEAST_5_BITS)) & LEAST_20_BITS;
-        }
+    private static int doAllOperations(int secret) {
+        secret = doOperation(secret, s -> s << 6);
+        secret = doOperation(secret, s -> s >> 5);
+        return doOperation(secret, s -> s << 11);
+    }
 
-        private static int getLargestAccumulation(Map<?, Integer> sequences) {
-            int result = -1;
+    private static int doOperation(int secret, IntUnaryOperator operation) {
+        int value = operation.applyAsInt(secret);
+        secret = mix(value, secret);
+        return prune(secret);
+    }
 
-            for (var accumulation : sequences.values()) {
-                result = Math.max(result, accumulation);
-            }
+    private static int mix(int value, int secret) {
+        return value ^ secret;
+    }
 
-            return result;
-        }
+    private static int prune(int secret) {
+        return secret & 0xffffff;
+    }
 
-        private static int lastDigit(int secret) {
-            return secret % 10;
-        }
-
-        private static int doAllOperations(int secret) {
-            secret = doOperation(secret, s -> s << 6);
-            secret = doOperation(secret, s -> s >> 5);
-            return doOperation(secret, s -> s << 11);
-        }
-
-        private static int doOperation(int secret, IntUnaryOperator operation) {
-            int value = operation.applyAsInt(secret);
-            secret = mix(value, secret);
-            return prune(secret);
-        }
-
-        private static int mix(int value, int secret) {
-            return value ^ secret;
-        }
-
-        private static int prune(int secret) {
-            return secret & 0xffffff;
-        }
+    private static List<Integer> parseSecrets(String input) {
+        return input.lines().map(Integer::parseInt).toList();
     }
 }
