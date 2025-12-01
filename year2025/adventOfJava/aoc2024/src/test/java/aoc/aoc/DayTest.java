@@ -30,8 +30,8 @@ class DayTest {
     private static final boolean BENCHMARKS_ENABLED = true;
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
-            "", // day01
-            ""
+            "3", // day01
+            "6"
     ));
 
     public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";
