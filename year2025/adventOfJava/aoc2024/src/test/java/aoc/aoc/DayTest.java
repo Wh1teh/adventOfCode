@@ -31,7 +31,9 @@ class DayTest {
 
     private static final List<String> SAMPLE_ANSWERS = new ArrayList<>(List.of(
             "3", // day01
-            "6"
+            "6",
+            "1227775554", // day02
+            "4174379265"
     ));
 
     public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";
