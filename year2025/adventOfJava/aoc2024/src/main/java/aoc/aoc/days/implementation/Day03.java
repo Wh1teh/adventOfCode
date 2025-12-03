@@ -2,7 +2,6 @@ package aoc.aoc.days.implementation;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Day03 extends AbstractDay {
 
@@ -21,23 +20,25 @@ public class Day03 extends AbstractDay {
 
     private static long getResult(String input, final int maxBatteries) {
         return input.lines()
-                .mapToLong(line -> {
-                    var arr = line.chars().map(i -> i - '0').toArray();
-
-                    var q = new PriorityQueue<>(Comparator.comparingInt(N::position));
-                    collectRegion(arr, 0, arr.length, q, new AtomicInteger(maxBatteries));
-
-                    long res = 0;
-                    while(!q.isEmpty())
-                        res = res * 10 + q.poll().value;
-
-                    return res;
-                })
+                .mapToLong(line -> getBank(line, maxBatteries))
                 .sum();
     }
 
-    private static void collectRegion(int[] arr, int from, int to, PriorityQueue<N> q, AtomicInteger limit) {
-        if (limit.get() == 0)
+    private static long getBank(String line, int maxBatteries) {
+        var arr = line.chars().map(i -> i - '0').toArray();
+
+        var q = new PriorityQueue<>(Comparator.comparingInt(N::position));
+        collectRegion(arr, 0, arr.length, q, maxBatteries);
+
+        long res = 0;
+        while (!q.isEmpty())
+            res = res * 10 + q.poll().value;
+
+        return res;
+    }
+
+    private static void collectRegion(int[] arr, int from, int to, PriorityQueue<N> q, int limit) {
+        if (q.size() >= limit)
             return;
 
         var n = findLargestInRegion(arr, from, to);
@@ -45,10 +46,9 @@ public class Day03 extends AbstractDay {
             return;
 
         q.add(n);
-        limit.decrementAndGet();
 
-        collectRegion(arr,n.position + 1,to, q, limit);
-        collectRegion(arr,from, n.position, q, limit);
+        collectRegion(arr, n.position + 1, to, q, limit);
+        collectRegion(arr, from, n.position, q, limit);
     }
 
     private static N findLargestInRegion(int[] arr, int from, int to) {
