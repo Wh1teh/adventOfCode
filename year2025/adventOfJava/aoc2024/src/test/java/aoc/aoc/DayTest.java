@@ -35,7 +35,9 @@ class DayTest {
             "1227775554", // day02
             "4174379265",
             "357", // day03
-            "3121910778619"
+            "3121910778619",
+            "13", // day04
+            "43"
     ));
 
     public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";

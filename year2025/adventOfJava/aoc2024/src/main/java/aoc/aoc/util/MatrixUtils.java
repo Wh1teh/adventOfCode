@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unused")
 public class MatrixUtils {
 
     public record Perimeter(int left, int right, int up, int down) {
@@ -66,6 +67,27 @@ public class MatrixUtils {
     public static <T> boolean notWithinMatrix(int y, int x, Matrix<T> matrix) {
         return y < 0 || y >= matrix.height()
                 || x < 0 || x >= matrix.width();
+    }
+
+    public static <T> void applyAround(
+            Matrix<T> matrix, Coordinate position,
+            Predicate<T> predicate,
+            Consumer<Coordinate> action
+    ) {
+        int padding = 1;
+
+        int yStart = Math.max(position.y() - padding, 0);
+        int yEnd = Math.min(position.y() + padding, matrix.height() - 1);
+        int xStart = Math.max(position.x() - padding, 0);
+        int xEnd = Math.min(position.x() + padding, matrix.width() - 1);
+
+        for (int y = yStart; y <= yEnd; y++) {
+            for (int x = xStart; x <= xEnd; x++) {
+                if (y == position.y() && x == position.x())
+                    continue;
+                applyTo(matrix, y, x, predicate, action);
+            }
+        }
     }
 
     public static <T> void applyAdjacent(
