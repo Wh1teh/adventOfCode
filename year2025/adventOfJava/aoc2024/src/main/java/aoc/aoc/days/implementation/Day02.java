@@ -1,48 +1,27 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.enums.Part;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static aoc.aoc.days.enums.Part.PART_1;
+import static aoc.aoc.days.enums.Part.PART_2;
 
 public class Day02 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
         return "" + normalizeInput(input)
-                .mapToLong(range -> {
-                    var split = range.split("-");
-                    final long end = Long.parseLong(split[1]);
-                    long current = Long.parseLong(split[0]);
-
-                    long accumulate = 0;
-                    while (current <= end) {
-                        if (setFromEqualParts("" + current, 2).size() == 1)
-                            accumulate += current;
-                        ++current;
-                    }
-
-                    return accumulate;
-                })
+                .mapToLong(range -> findInvalidIds(range, PART_1))
                 .sum();
     }
 
     @Override
     protected String part2Impl(String input) {
         return "" + normalizeInput(input)
-                .mapToLong(range -> {
-                    var split = range.split("-");
-                    final long end = Long.parseLong(split[1]);
-                    long current = Long.parseLong(split[0]);
-
-                    long accumulate = 0;
-                    while (current <= end) {
-                        if (isInvalidPart2("" + current))
-                            accumulate += current;
-                        ++current;
-                    }
-
-                    return accumulate;
-                })
+                .mapToLong(range -> findInvalidIds(range, PART_2))
                 .sum();
     }
 
@@ -50,27 +29,58 @@ public class Day02 extends AbstractDay {
         return Arrays.stream(input.lines().collect(Collectors.joining()).split(","));
     }
 
-    private static boolean isInvalidPart2(String id) {
-        for (int i = 2; i <= id.length(); i++) {
-            if (setFromEqualParts(id, i).size() == 1)
+    private static long findInvalidIds(String range, Part part) {
+        var split = range.split("-");
+        final long end = Long.parseLong(split[1]);
+        long currentId = Long.parseLong(split[0]);
+
+        long accumulate = 0;
+        while (currentId <= end) {
+            if (isInvalid(currentId, part))
+                accumulate += currentId;
+            ++currentId;
+        }
+
+        return accumulate;
+    }
+
+    private static boolean isInvalid(long id, Part part) {
+        int length = calculateDigits(id);
+        for (int i = 2; i <= (part == PART_1 ? 2 : length); i++) {
+            if (setFromEqualPartsNew(id, i, length))
                 return true;
         }
 
         return false;
     }
 
-    private static Set<String> setFromEqualParts(String str, final int n) {
-        if (str.length() % n != 0)
-            return Collections.emptySet();
+    private static int calculateDigits(long id) {
+        return (id == 0) ? 1 : (int) Math.log10(id) + 1;
+    }
 
-        Set<String> parts = new HashSet<>();
-        final int bufferSize = str.length() / n;
-        for (int i = 0; i < n; i++) {
-            parts.add(
-                    str.substring(i * bufferSize, (i + 1) * bufferSize)
-            );
+    private static boolean setFromEqualPartsNew(long number, final int n, int length) {
+        boolean notDivisible = length % n != 0;
+        if (notDivisible)
+            return false;
+
+        int bufferSize = length / n;
+        long divisor = calculateDivisor(bufferSize);
+        long expected = number % divisor;
+        number /= divisor;
+        for (int i = 1; i < n; i++) {
+             if (number % divisor != expected)
+                return false;
+
+            number /= divisor;
         }
 
-        return parts;
+        return true;
+    }
+
+    private static long calculateDivisor(int bufferSize) {
+        long divisor = 1;
+        for (int i = 0; i < bufferSize; i++)
+            divisor *= 10;
+        return divisor;
     }
 }
