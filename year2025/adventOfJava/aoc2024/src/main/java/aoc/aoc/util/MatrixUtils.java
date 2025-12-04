@@ -90,6 +90,39 @@ public class MatrixUtils {
         }
     }
 
+    public static <T> void applyAround(
+            Matrix<T> matrix, Coordinate position,
+            BiConsumer<T, Coordinate> action
+    ) {
+        int padding = 1;
+
+        int yStart = Math.max(position.y() - padding, 0);
+        int yEnd = Math.min(position.y() + padding, matrix.height() - 1);
+        int xStart = Math.max(position.x() - padding, 0);
+        int xEnd = Math.min(position.x() + padding, matrix.width() - 1);
+
+        for (int y = yStart; y <= yEnd; y++) {
+            for (int x = xStart; x <= xEnd; x++) {
+                if (y == position.y() && x == position.x())
+                    continue;
+                applyTo(matrix, y, x, __ -> true, action);
+            }
+        }
+    }
+
+    private static <T> void applyTo(
+            Matrix<T> matrix, int y, int x,
+            Predicate<T> predicate,
+            BiConsumer<T, Coordinate> action
+    ) {
+        if (notWithinMatrix(y, x, matrix))
+            return;
+
+        T ch = matrix.get(y, x);
+        if (predicate.test(ch))
+            action.accept(ch, new Coordinate(y, x));
+    }
+
     public static <T> void applyAdjacent(
             Matrix<T> matrix, Coordinate position,
             Predicate<T> predicate,

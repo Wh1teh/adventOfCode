@@ -2,6 +2,9 @@ package aoc.aoc.days.implementation;
 
 import aoc.aoc.util.*;
 
+import java.util.*;
+import java.util.function.BiConsumer;
+
 public class Day04 extends AbstractDay {
 
     @Override
@@ -9,11 +12,11 @@ public class Day04 extends AbstractDay {
         var matrix = GenericMatrix.charMatrix(input);
         int[] validRolls = {0};
 
-        matrix.iterate((ch, coordinate) -> {
-            if (ch != '@')
+        matrix.iterate((ch, position) -> {
+            if (isRoll(ch))
                 return;
 
-            if (countRollsAround(coordinate, matrix) < 4)
+            if (countRollsAround(position, matrix) < 4)
                 ++validRolls[0];
         });
 
@@ -24,30 +27,34 @@ public class Day04 extends AbstractDay {
     protected String part2Impl(String input) {
         var matrix = GenericMatrix.charMatrix(input);
         int[] validRolls = {0};
+        Deque<Coordinate> removedRolls = new ArrayDeque<>();
 
-        boolean[] wasRemovedLastRound = {true};
-        while (wasRemovedLastRound[0]) {
-            wasRemovedLastRound[0] = false;
+        BiConsumer<Character, Coordinate> removeRolls = (ch, position) -> {
+            if (isRoll(ch))
+                return;
 
-            matrix.iterate((ch, coordinate) -> {
-                if (ch != '@')
-                    return;
+            if (countRollsAround(position, matrix) < 4) {
+                matrix.set(position, 'x');
+                ++validRolls[0];
+                removedRolls.add(position);
+            }
+        };
 
-                if (countRollsAround(coordinate, matrix) < 4) {
-                    wasRemovedLastRound[0] = true;
-                    matrix.set(coordinate, 'x');
-                    ++validRolls[0];
-                }
-            });
-        }
+        matrix.iterate(removeRolls);
+        while (!removedRolls.isEmpty())
+            MatrixUtils.applyAround(matrix, removedRolls.pop(), removeRolls);
 
         return "" + validRolls[0];
     }
 
-    private static int countRollsAround(Coordinate coordinate, Matrix<Character> matrix) {
+    private static boolean isRoll(Character ch) {
+        return ch != '@';
+    }
+
+    private static int countRollsAround(Coordinate position, Matrix<Character> matrix) {
         int[] adjacent = {0};
         MatrixUtils.applyAround(
-                matrix, coordinate, c -> c == '@', __ -> ++adjacent[0]
+                matrix, position, c -> c == '@', __ -> ++adjacent[0]
         );
         return adjacent[0];
     }
