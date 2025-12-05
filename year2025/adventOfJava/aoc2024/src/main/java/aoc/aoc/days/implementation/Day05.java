@@ -22,8 +22,8 @@ public class Day05 extends AbstractDay {
                 case START -> stack++;
                 case END -> stack--;
                 case NOT -> {
-                    boolean isOutOfRange = stack != 0;
-                    if (isOutOfRange)
+                    boolean isNotOutOfRange = stack != 0;
+                    if (isNotOutOfRange)
                         ++freshIds;
                 }
             }
