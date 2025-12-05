@@ -1,13 +1,11 @@
 package aoc.aoc.days.implementation;
 
 import aoc.aoc.days.enums.Part;
-import aoc.aoc.util.Utils;
 
 import java.util.*;
 
 import static aoc.aoc.days.enums.Part.*;
 
-@SuppressWarnings("java:S6916") // false positive
 public class Day05 extends AbstractDay {
 
     @Override
@@ -68,49 +66,28 @@ public class Day05 extends AbstractDay {
         }
     }
 
-    private record Parsed(List<long[]> ranges, List<Long> ids) {
-    }
-
     private static PriorityQueue<Id> buildPriorityQueue(String input, Part part) {
-        var parsed = parseRangesAndIds(input, part);
         var heap = new PriorityQueue<Id>();
+        var split = input.split("\\R{2}");
 
-        addRanges(parsed, heap);
+        parseAndAddRanges(heap, split);
         if (part == PART_1)
-            addIds(parsed, heap);
+            parseAndAddIds(heap, split);
 
         return heap;
     }
 
-    private static Parsed parseRangesAndIds(String input, Part part) {
-        var split = input.split("\\R{2}");
-        return new Parsed(parseRanges(split), part == PART_1 ? parseIds(split) : null);
+    private static void parseAndAddIds(PriorityQueue<Id> heap, String[] split) {
+        split[1].lines()
+                .forEach(line -> heap.offer(new Id(Long.parseLong(line), Boundary.NOT)));
     }
 
-    private static List<Long> parseIds(String[] split) {
-        return split[1].lines().map(Long::parseLong).toList();
-    }
-
-    private static List<long[]> parseRanges(String[] split) {
-        return split[0].lines()
-                .map(line -> {
+    private static void parseAndAddRanges(PriorityQueue<Id> heap, String[] split) {
+        split[0].lines()
+                .forEach(line -> {
                     var s = line.split("-");
-                    return Utils.arrayOf(Long.parseLong(s[0]), Long.parseLong(s[1]));
-                })
-                .toList();
-    }
-
-    private static void addRanges(Parsed parsed, PriorityQueue<Id> heap) {
-        for (var range : parsed.ranges) {
-            var start = new Id(range[0], Boundary.START);
-            var end = new Id(range[1], Boundary.END);
-            heap.offer(start);
-            heap.offer(end);
-        }
-    }
-
-    private static void addIds(Parsed parsed, PriorityQueue<Id> heap) {
-        for (Long id : parsed.ids)
-            heap.offer(new Id(id, Boundary.NOT));
+                    heap.offer(new Id(Long.parseLong(s[0]), Boundary.START));
+                    heap.offer(new Id(Long.parseLong(s[1]), Boundary.END));
+                });
     }
 }
