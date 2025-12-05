@@ -10,46 +10,36 @@ public class Day05 extends AbstractDay {
 
     @Override
     protected String part1Impl(String input) {
-        var heap = buildPriorityQueue(input, PART_1);
-
-        int freshIds = 0;
-        int stack = 0;
-        while (!heap.isEmpty()) {
-            var id = heap.poll();
-            switch (id.boundary) {
-                case START -> stack++;
-                case END -> stack--;
-                case NOT -> {
-                    boolean isNotOutOfRange = stack != 0;
-                    if (isNotOutOfRange)
-                        ++freshIds;
-                }
-            }
-        }
-
-        return "" + freshIds;
+        return "" + countIds(input, PART_1);
     }
 
     @Override
     protected String part2Impl(String input) {
-        var heap = buildPriorityQueue(input, PART_2);
+        return "" + countIds(input, PART_2);
+    }
 
-        long freshIds = 0;
-        var stack = new ArrayDeque<Long>();
-        while (!heap.isEmpty()) {
-            var id = heap.poll();
+    private static long countIds(String input, Part part) {
+        long allFreshIds = 0;
+        int freshIngredients = 0;
+        var activeRanges = new ArrayDeque<Long>();
+
+        for (var id : buildSortedList(input, part)) {
             switch (id.boundary) {
-                case START -> stack.push(id.number);
+                case START -> activeRanges.push(id.number);
                 case END -> {
-                    var pop = stack.pop();
-                    if (stack.isEmpty())
-                        freshIds += id.number + 1 - pop;
+                    var pop = activeRanges.pop();
+                    if (activeRanges.isEmpty())
+                        allFreshIds += id.number + 1 - pop;
                 }
-                case NOT -> {/*ignore*/}
+                case NOT -> {
+                    boolean isNotOutOfRange = !activeRanges.isEmpty();
+                    if (isNotOutOfRange)
+                        ++freshIngredients;
+                }
             }
         }
 
-        return "" + freshIds;
+        return part == PART_1 ? freshIngredients : allFreshIds;
     }
 
     private enum Boundary {
@@ -58,36 +48,33 @@ public class Day05 extends AbstractDay {
         END,
     }
 
-    private record Id(long number, Boundary boundary) implements Comparable<Id> {
-        @Override
-        public int compareTo(Id o) {
-            int c = Long.compare(number, o.number);
-            return c != 0 ? c : boundary.compareTo(o.boundary);
-        }
+    private record Id(long number, Boundary boundary) {
     }
 
-    private static PriorityQueue<Id> buildPriorityQueue(String input, Part part) {
-        var heap = new PriorityQueue<Id>();
+    private static List<Id> buildSortedList(String input, Part part) {
         var split = input.split("\\R{2}");
+        var ids = new ArrayList<Id>();
 
-        parseAndAddRanges(heap, split);
+        parseAndAddRanges(ids, split);
         if (part == PART_1)
-            parseAndAddIds(heap, split);
+            parseAndAddIds(ids, split);
 
-        return heap;
+        ids.sort(Comparator.comparingLong(Id::number)
+                .thenComparing(id -> id.boundary));
+        return ids;
     }
 
-    private static void parseAndAddIds(PriorityQueue<Id> heap, String[] split) {
+    private static void parseAndAddIds(List<Id> ids, String[] split) {
         split[1].lines()
-                .forEach(line -> heap.offer(new Id(Long.parseLong(line), Boundary.NOT)));
+                .forEach(line -> ids.add(new Id(Long.parseLong(line), Boundary.NOT)));
     }
 
-    private static void parseAndAddRanges(PriorityQueue<Id> heap, String[] split) {
+    private static void parseAndAddRanges(List<Id> ids, String[] split) {
         split[0].lines()
                 .forEach(line -> {
                     var s = line.split("-");
-                    heap.offer(new Id(Long.parseLong(s[0]), Boundary.START));
-                    heap.offer(new Id(Long.parseLong(s[1]), Boundary.END));
+                    ids.add(new Id(Long.parseLong(s[0]), Boundary.START));
+                    ids.add(new Id(Long.parseLong(s[1]), Boundary.END));
                 });
     }
 }
