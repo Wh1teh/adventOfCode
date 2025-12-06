@@ -8,9 +8,9 @@ public interface Matrix<T> {
 
     T get(Coordinate position);
 
-    T set(Coordinate position, T element);
+    void set(Coordinate position, T element);
 
-    T set(int y, int x, T element);
+    void set(int y, int x, T element);
 
     void iterate(MatrixConsumer<T> consumer);
 
