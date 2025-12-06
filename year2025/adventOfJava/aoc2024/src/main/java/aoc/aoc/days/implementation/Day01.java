@@ -1,8 +1,9 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.interfaces.DayStringParser;
 import aoc.aoc.util.Direction;
 
-public class Day01 extends AbstractDay {
+public class Day01 extends DayStringParser {
 
     @Override
     protected String part1Impl(String input) {

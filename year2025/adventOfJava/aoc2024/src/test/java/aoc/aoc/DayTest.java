@@ -44,8 +44,11 @@ class DayTest {
             "3263827"
     ));
 
+    @SuppressWarnings("unused")
     public static final String SAMPLE_WORKS_INPUT_DOES_NOT = "Sample works, input does not";
+    @SuppressWarnings("unused")
     public static final String SLOW = "Solution is working but slow";
+    @SuppressWarnings("unused")
     public static final String INCOMPLETE = "Solution is incomplete";
     static final Map<DayParameter, String> DISABLED = Map.of(
 //            dayPart(19, 2), INCOMPLETE
@@ -114,8 +117,9 @@ class DayTest {
                 ).collect(Collectors.joining(" | "));
     }
 
+    @SuppressWarnings("unused")
     @SneakyThrows
-    private static void writeDebug(int dayNumber, int part, boolean isSample, Day day) {
+    private static void writeDebug(int dayNumber, int part, boolean isSample, Day<?> day) {
         String debugString = day.debugString();
         if (debugString.isBlank())
             return;

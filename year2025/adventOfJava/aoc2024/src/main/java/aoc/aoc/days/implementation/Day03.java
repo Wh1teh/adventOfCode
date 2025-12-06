@@ -1,9 +1,11 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.interfaces.DayStringParser;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-public class Day03 extends AbstractDay {
+public class Day03 extends DayStringParser {
 
     @Override
     protected String part1Impl(String input) {

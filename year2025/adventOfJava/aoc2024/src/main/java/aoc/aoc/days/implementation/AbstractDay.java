@@ -1,10 +1,10 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.enums.Part;
 import aoc.aoc.days.interfaces.Day;
 import aoc.aoc.days.interfaces.DaySpecifier;
-import aoc.aoc.days.enums.Part;
 
-public abstract class AbstractDay implements Day, DaySpecifier {
+public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
 
     private static final StringBuilder DEBUG_STRING = new StringBuilder();
 
@@ -13,13 +13,13 @@ public abstract class AbstractDay implements Day, DaySpecifier {
     protected Part part;
     protected boolean isSample;
 
-    AbstractDay() {
+    protected AbstractDay() {
         String className = this.getClass().getSimpleName();
         this.dayOrdinal = className.substring(className.length() - 2);
     }
 
-    protected AbstractDay(int part) {
-        this.dayOrdinal = "%02d".formatted(part);
+    protected AbstractDay(int dayOrdinal) {
+        this.dayOrdinal = "%02d".formatted(dayOrdinal);
     }
 
     @Override
@@ -35,18 +35,18 @@ public abstract class AbstractDay implements Day, DaySpecifier {
     }
 
     @Override
-    public String part1(String input) {
+    public String part1(T input) {
         return part1Impl(input);
     }
 
     @Override
-    public String part2(String input) {
+    public String part2(T input) {
         return part2Impl(input);
     }
 
-    protected abstract String part1Impl(String input);
+    protected abstract String part1Impl(T input);
 
-    protected abstract String part2Impl(String input);
+    protected abstract String part2Impl(T input);
 
     @Override
     public String debugString() {

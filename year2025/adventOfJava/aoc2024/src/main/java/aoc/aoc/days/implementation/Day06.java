@@ -1,5 +1,6 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.interfaces.DayCharacterArrayParser;
 import aoc.aoc.util.GenericMatrix;
 import aoc.aoc.util.Operand;
 import aoc.aoc.util.StringMatrix;
@@ -12,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Day06 extends AbstractDay {
+public class Day06 extends DayCharacterArrayParser {
 
     @Override
-    protected String part1Impl(String input) {
-        var temp = input.lines()
+    protected String part1Impl(char[] input) {
+        var temp = new String(input).lines()
                 .map(line -> line.trim().split("\\s+"))
                 .toList();
         List<List<Integer>> numbers = new ArrayList<>();
@@ -48,8 +49,8 @@ public class Day06 extends AbstractDay {
     }
 
     @Override
-    protected String part2Impl(String input) {
-        var lines = input.lines().toList();
+    protected String part2Impl(char[] input) {
+        var lines = new String(input).lines().toList();
         int widestRow = 0;
         for (String line : lines) {
             if (line.length() > widestRow)

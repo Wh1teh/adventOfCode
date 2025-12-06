@@ -1,6 +1,7 @@
 package aoc.aoc.days.implementation;
 
 import aoc.aoc.days.enums.Part;
+import aoc.aoc.days.interfaces.DayStringParser;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,7 +10,7 @@ import java.util.stream.Stream;
 import static aoc.aoc.days.enums.Part.PART_1;
 import static aoc.aoc.days.enums.Part.PART_2;
 
-public class Day02 extends AbstractDay {
+public class Day02 extends DayStringParser {
 
     @Override
     protected String part1Impl(String input) {

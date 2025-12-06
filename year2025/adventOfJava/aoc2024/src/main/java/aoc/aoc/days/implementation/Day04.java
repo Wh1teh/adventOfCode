@@ -1,11 +1,12 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.days.interfaces.DayStringParser;
 import aoc.aoc.util.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public class Day04 extends AbstractDay {
+public class Day04 extends DayStringParser {
 
     @Override
     protected String part1Impl(String input) {
