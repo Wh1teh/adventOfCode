@@ -1,5 +1,9 @@
 package aoc.aoc.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,5 +70,14 @@ public class Utils {
 
     public static long[] arrayOf(long... longs) {
         return longs;
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Collections {
+
+        public static <C extends Collection<E>, E> C addAndReturn(C collection, E element) {
+            collection.add(element);
+            return collection;
+        }
     }
 }
