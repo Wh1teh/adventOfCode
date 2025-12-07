@@ -1,11 +1,12 @@
 package aoc.aoc.days.implementation;
 
+import aoc.aoc.cache.MemoIgnore;
 import aoc.aoc.cache.Memoize;
 import aoc.aoc.days.interfaces.DayStringParser;
 import aoc.aoc.util.Coordinate;
-import aoc.aoc.util.GenericMatrix;
 import aoc.aoc.util.Matrix;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static aoc.aoc.util.GenericMatrix.charMatrix;
@@ -15,47 +16,48 @@ public class Day07 extends DayStringParser {
     
     @Override
     protected String part1Impl(String input) {
-        var set = p1(charMatrix(input), 0, input.indexOf('S'));
+        var set = new HashSet<Coordinate>();
+        p1(0, input.indexOf('S'),charMatrix(input),set);
         return "" + set.size();
     }
 
     @Override
     protected String part2Impl(String input) {
-        return "" + (p2(charMatrix(input), 0, input.indexOf('S')) + 1);
+        return "" + (p2( 0, input.indexOf('S'), charMatrix(input)) + 1);
     }
     
     @Memoize
-    protected long p2(Matrix<Character> matrix, int y, int x) {
+    protected long p2(int y, int x, Matrix<Character> matrix) {
         if (notWithinMatrix(y, x, matrix))
             return 0L;
 
-        while (notEndOrSplitter(matrix, y, x))
+        while (notEndOrSplitter(y, x, matrix))
             ++y;
 
-        return y == matrix.height() ? 0L 
-                : 1L 
-                + p2(matrix, y, x - 1) 
-                + p2(matrix, y, x + 1);
+        if (y == matrix.height())
+            return 0L;
+        
+        return 1L 
+                + p2( y, x - 1,matrix) 
+                + p2( y, x + 1,matrix);
     }
 
     @Memoize
-    protected Set<Coordinate> p1(GenericMatrix<Character> matrix, int y, int x) {
-        var set = new java.util.HashSet<Coordinate>();
-        try {
-            while (matrix.get(y, x) != '^')
-                ++y;
+    protected void p1(int y, int x, Matrix<Character> matrix, @MemoIgnore Set<Coordinate> set) {
+        if (notWithinMatrix(y, x, matrix))
+            return;
 
-            set.add(new Coordinate(y, x));
-            set.addAll(p1(matrix, y, x - 1));
-            set.addAll(p1(matrix, y, x + 1));
-        } catch (Exception e) {
-            // don't care
-        }
+        while (notEndOrSplitter(y, x, matrix))
+            ++y;
+        if (y == matrix.height())
+            return;
 
-        return set;
+        set.add(new Coordinate(y, x));
+        p1(y, x - 1, matrix, set);
+        p1(y, x + 1, matrix, set);
     }
 
-    private static boolean notEndOrSplitter(Matrix<Character> matrix, int y, int x) {
+    private static boolean notEndOrSplitter(int y, int x, Matrix<Character> matrix) {
         return y < matrix.height() && matrix.get(y, x) != '^';
     }
 }
