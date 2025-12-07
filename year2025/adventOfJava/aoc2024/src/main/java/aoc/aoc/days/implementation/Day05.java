@@ -10,13 +10,13 @@ import static aoc.aoc.days.enums.Part.*;
 public class Day05 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
-        return "" + countIds(input, PART_1);
+    protected Long part1Impl(String input) {
+        return countIds(input, PART_1);
     }
 
     @Override
-    protected String part2Impl(String input) {
-        return "" + countIds(input, PART_2);
+    protected Long part2Impl(String input) {
+        return countIds(input, PART_2);
     }
 
     private static long countIds(String input, Part part) {

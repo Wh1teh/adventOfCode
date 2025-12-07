@@ -18,15 +18,15 @@ public class Day07 extends DayStringParser {
     public static final char SPLITTER = '^';
 
     @Override
-    protected String part1Impl(String input) {
-        return "" + shootBeam(input, new HashSet<>(),
+    protected Integer part1Impl(String input) {
+        return shootBeam(input, new HashSet<>(),
                 (coordinate, set, __) -> addAndReturn(set, coordinate))
                 .size();
     }
 
     @Override
-    protected String part2Impl(String input) {
-        return "" + shootBeam(input, 1L, (__, left, right) -> left + right);
+    protected Long part2Impl(String input) {
+        return shootBeam(input, 1L, (__, left, right) -> left + right);
     }
 
     @FunctionalInterface

@@ -13,15 +13,15 @@ import static aoc.aoc.days.enums.Part.PART_2;
 public class Day02 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
-        return "" + normalizeInput(input)
+    protected Long part1Impl(String input) {
+        return normalizeInput(input)
                 .mapToLong(range -> findInvalidIds(range, PART_1))
                 .sum();
     }
 
     @Override
-    protected String part2Impl(String input) {
-        return "" + normalizeInput(input)
+    protected Long part2Impl(String input) {
+        return normalizeInput(input)
                 .mapToLong(range -> findInvalidIds(range, PART_2))
                 .sum();
     }
@@ -69,7 +69,7 @@ public class Day02 extends DayStringParser {
         long expected = number % divisor;
         number /= divisor;
         for (int i = 1; i < n; i++) {
-             if (number % divisor != expected)
+            if (number % divisor != expected)
                 return false;
 
             number /= divisor;

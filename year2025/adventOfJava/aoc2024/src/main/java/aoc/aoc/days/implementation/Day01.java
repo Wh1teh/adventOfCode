@@ -6,7 +6,7 @@ import aoc.aoc.util.Direction;
 public class Day01 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
+    protected Integer part1Impl(String input) {
         int current = 50;
         int counter = 0;
         for (var line : input.lines().toList()) {
@@ -17,11 +17,11 @@ public class Day01 extends DayStringParser {
                 ++counter;
         }
 
-        return "" + counter;
+        return counter;
     }
 
     @Override
-    protected String part2Impl(String input) {
+    protected Integer part2Impl(String input) {
         int previous = 50;
         int counter = 0;
         for (var line : input.lines().toList()) {
@@ -32,7 +32,7 @@ public class Day01 extends DayStringParser {
             previous = Math.floorMod(current, 100);
         }
 
-        return "" + counter;
+        return counter;
     }
 
     private record Result(Direction direction, int number) {

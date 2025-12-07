@@ -8,13 +8,13 @@ import java.util.PriorityQueue;
 public class Day03 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
-        return "" + getResult(input, 2);
+    protected Long part1Impl(String input) {
+        return getResult(input, 2);
     }
 
     @Override
-    protected String part2Impl(String input) {
-        return "" + getResult(input, 12);
+    protected Long part2Impl(String input) {
+        return getResult(input, 12);
     }
 
     private record N(int value, int position) {

@@ -13,18 +13,18 @@ import static aoc.aoc.days.enums.Part.*;
 public class Day06 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
+    protected Long part1Impl(String input) {
         return solveMathHomework(input);
     }
 
     @Override
-    protected String part2Impl(String input) {
+    protected Long part2Impl(String input) {
         return solveMathHomework(input);
     }
 
-    private String solveMathHomework(String input) {
+    private long solveMathHomework(String input) {
         var lines = input.lines().collect(Collectors.toCollection(ArrayList::new));
-        return "" + buildRegions(lines, this.part).stream()
+        return buildRegions(lines, this.part).stream()
                 .mapToLong(Day06::calculateRegion)
                 .sum();
     }

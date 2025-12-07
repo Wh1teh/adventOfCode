@@ -8,6 +8,7 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
 
     private static final StringBuilder DEBUG_STRING = new StringBuilder();
 
+    @SuppressWarnings("unused")
     private final String dayOrdinal;
 
     protected Part part;
@@ -36,17 +37,17 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
 
     @Override
     public String part1(T input) {
-        return part1Impl(input);
+        return convertResult(part1Impl(input));
     }
 
     @Override
     public String part2(T input) {
-        return part2Impl(input);
+        return convertResult(part2Impl(input));
     }
 
-    protected abstract String part1Impl(T input);
+    protected abstract Object part1Impl(T input);
 
-    protected abstract String part2Impl(T input);
+    protected abstract Object part2Impl(T input);
 
     @Override
     public String debugString() {
@@ -56,5 +57,13 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
     @Override
     public void clearDebug() {
         DEBUG_STRING.setLength(0);
+    }
+
+    private String convertResult(Object result) {
+        return switch (result) {
+            case String s -> s;
+            case Number n -> "" + n;
+            default -> result.toString();
+        };
     }
 }

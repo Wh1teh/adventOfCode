@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 public class Day04 extends DayStringParser {
 
     @Override
-    protected String part1Impl(String input) {
+    protected Integer part1Impl(String input) {
         var matrix = GenericMatrix.charMatrix(input);
         int[] validRolls = {0};
 
@@ -21,11 +21,11 @@ public class Day04 extends DayStringParser {
                 ++validRolls[0];
         });
 
-        return "" + validRolls[0];
+        return validRolls[0];
     }
 
     @Override
-    protected String part2Impl(String input) {
+    protected Integer part2Impl(String input) {
         var matrix = GenericMatrix.charMatrix(input);
         int[] validRolls = {0};
         Deque<Coordinate> removedRolls = new ArrayDeque<>();
@@ -45,7 +45,7 @@ public class Day04 extends DayStringParser {
         while (!removedRolls.isEmpty())
             MatrixUtils.applyAround(matrix, removedRolls.pop(), removeRolls);
 
-        return "" + validRolls[0];
+        return validRolls[0];
     }
 
     private static boolean isRoll(Character ch) {
