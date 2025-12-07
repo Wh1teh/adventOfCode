@@ -41,7 +41,9 @@ class DayTest {
             "3", // day05
             "14",
             "4277556", // day06
-            "3263827"
+            "3263827",
+            "21", // day07
+            "40"
     ));
 
     @SuppressWarnings("unused")
