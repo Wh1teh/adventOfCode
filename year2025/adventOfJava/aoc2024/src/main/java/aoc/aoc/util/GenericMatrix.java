@@ -1,9 +1,11 @@
 package aoc.aoc.util;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class GenericMatrix<T> implements Matrix<T> {
 
@@ -77,6 +79,10 @@ public class GenericMatrix<T> implements Matrix<T> {
                 .toArray(Character[][]::new);
 
         return new GenericMatrix<>(arr, arr.length, arr[0].length);
+    }
+
+    public Stream<T[]> rows() {
+        return Arrays.stream(matrix);
     }
 
     @Override
