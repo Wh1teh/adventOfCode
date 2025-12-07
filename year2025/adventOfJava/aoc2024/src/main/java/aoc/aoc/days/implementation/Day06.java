@@ -22,44 +22,28 @@ public class Day06 extends DayStringParser {
         return solveMathHomework(input);
     }
 
-    private record Region(GenericMatrix<Character> numbers, Operand operand) {
-        long calculate(long a, long b) {
-            return switch (operand) {
-                case ADD -> a + b;
-                case MUL -> Math.max(1L, a) * b;
-                default -> throw new IllegalStateException("Unexpected value: " + operand);
-            };
-        }
-    }
-
     private String solveMathHomework(String input) {
         var lines = input.lines().collect(Collectors.toCollection(ArrayList::new));
-        long result = 0L;
-        for (var region : buildRegions(lines, this.part))
-            result += calculateRegion(region);
-
-        return "" + result;
+        return "" + buildRegions(lines, this.part).stream()
+                .mapToLong(Day06::calculateRegion)
+                .sum();
     }
 
     private static long calculateRegion(Region region) {
-        var matrix = region.numbers;
-
-        long total = 0L;
-        for (int y = 0; y < matrix.height(); y++) {
-            long current = 0L;
-            for (int x = 0; x < matrix.width(); x++) {
-                char ch = matrix.get(y, x);
-                if (ch != ' ')
-                    current = current * 10 + (ch - '0');
-            }
-            
-            total = region.calculate(total, current);
-        }
-
-        return total;
+        return region.numbers.rows()
+                .map(Day06::parseRow)
+                .reduce(0L, region::calculate);
     }
 
-    private static ArrayList<Region> buildRegions(ArrayList<String> lines, Part part) {
+    private static long parseRow(Character[] row) {
+        long current = 0L;
+        for (char ch : row)
+            if (ch != ' ')
+                current = current * 10 + (ch - '0');
+        return current;
+    }
+
+    private static ArrayList<Region> buildRegions(List<String> lines, Part part) {
         var operands = lines.removeLast();
         var regions = new ArrayList<Region>();
 
@@ -70,18 +54,15 @@ public class Day06 extends DayStringParser {
             if (!isOperand(ch))
                 continue;
 
-            regions.add(new Region(
-                    buildRegionMatrix(lines, start, end, part), Operand.fromChar(ch)
-            ));
-
+            regions.add(buildRegion(lines, start, end, part, ch));
             end = start - 1;
         }
 
         return regions;
     }
 
-    private static GenericMatrix<Character> buildRegionMatrix(
-            List<String> lines, int start, int end, Part part
+    private static Region buildRegion(
+            List<String> lines, int start, int end, Part part, char ch
     ) {
         var region = new ArrayList<List<Character>>();
 
@@ -93,10 +74,21 @@ public class Day06 extends DayStringParser {
         }
 
         var matrix = new GenericMatrix<>(region);
-        return part == PART_1 ? matrix : matrix.rotate90AntiClockwise();
+        matrix = part == PART_1 ? matrix : matrix.rotate90AntiClockwise();
+        return new Region(matrix, Operand.fromChar(ch));
     }
 
     private static boolean isOperand(char ch) {
         return ch == '*' || ch == '+';
+    }
+
+    private record Region(GenericMatrix<Character> numbers, Operand operand) {
+        long calculate(long a, long b) {
+            return switch (operand) {
+                case ADD -> a + b;
+                case MUL -> Math.max(1L, a) * b;
+                default -> throw new IllegalStateException("Unexpected value: " + operand);
+            };
+        }
     }
 }
