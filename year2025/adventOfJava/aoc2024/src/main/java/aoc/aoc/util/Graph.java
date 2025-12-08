@@ -72,7 +72,7 @@ public class Graph<T> implements VisitableGraph<T> {
         Map<T, Double> distances = new HashMap<>();
         Map<T, T> previousNodes = new HashMap<>();
         PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(
-                Comparator.comparingInt(node -> (int) node.distance)
+                Comparator.comparingDouble(node -> node.distance.doubleValue())
         );
 
         for (T node : adjacencyList.keySet()) {

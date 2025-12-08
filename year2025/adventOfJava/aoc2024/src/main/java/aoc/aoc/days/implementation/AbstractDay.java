@@ -4,6 +4,8 @@ import aoc.aoc.days.enums.Part;
 import aoc.aoc.days.interfaces.Day;
 import aoc.aoc.days.interfaces.DaySpecifier;
 
+import static aoc.aoc.days.enums.Part.*;
+
 public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
 
     private static final StringBuilder DEBUG_STRING = new StringBuilder();
@@ -12,7 +14,20 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
     private final String dayOrdinal;
 
     protected Part part;
+
+    protected boolean isPart1() {
+        return part == PART_1;
+    }
+
+    protected boolean isPart2() {
+        return part == PART_2;
+    }
+
     protected boolean isSample;
+
+    protected boolean isSample() {
+        return isSample;
+    }
 
     protected AbstractDay() {
         String className = this.getClass().getSimpleName();
