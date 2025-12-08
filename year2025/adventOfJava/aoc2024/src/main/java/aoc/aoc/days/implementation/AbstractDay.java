@@ -34,6 +34,7 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
         this.dayOrdinal = className.substring(className.length() - 2);
     }
 
+    @SuppressWarnings("unused")
     protected AbstractDay(int dayOrdinal) {
         this.dayOrdinal = "%02d".formatted(dayOrdinal);
     }
@@ -75,6 +76,9 @@ public abstract class AbstractDay<T> implements Day<T>, DaySpecifier {
     }
 
     private String convertResult(Object result) {
+        if (result == null)
+            result = "null";
+
         return switch (result) {
             case String s -> s;
             case Number n -> "" + n;
