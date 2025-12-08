@@ -58,23 +58,29 @@ public class Graph<T> implements VisitableGraph<T> {
         adjacencyList.get(source).add(new Edge<>(destination, weight));
     }
 
+    public void addEdge(T source, T destination, double weight) {
+        adjacencyList.putIfAbsent(source, new ArrayList<>());
+        adjacencyList.putIfAbsent(destination, new ArrayList<>());
+        adjacencyList.get(source).add(new Edge<>(destination, weight));
+    }
+
     public void clear() {
         adjacencyList.clear();
     }
 
     public List<T> dijkstra(T start, Predicate<T> endCondition) {
-        Map<T, Integer> distances = new HashMap<>();
+        Map<T, Double> distances = new HashMap<>();
         Map<T, T> previousNodes = new HashMap<>();
         PriorityQueue<Node<T>> priorityQueue = new PriorityQueue<>(
                 Comparator.comparingInt(node -> (int) node.distance)
         );
 
         for (T node : adjacencyList.keySet()) {
-            distances.put(node, Integer.MAX_VALUE);
+            distances.put(node, Double.MAX_VALUE);
             previousNodes.put(node, null);
         }
-        distances.put(start, 0);
-        priorityQueue.add(new Node<>(start, 0));
+        distances.put(start, 0.0);
+        priorityQueue.add(new Node<>(start, 0.0));
 
         while (!priorityQueue.isEmpty()) {
             Node<T> currentNode = priorityQueue.poll();
@@ -86,7 +92,7 @@ public class Graph<T> implements VisitableGraph<T> {
             for (Edge<T> edge : adjacencyList.getOrDefault(current, new ArrayList<>())) {
                 assertNonNegativeEdgeWeight(edge);
 
-                int newDist = distances.get(current) + edge.weight.intValue();
+                double newDist = distances.get(current) + edge.weight.doubleValue();
                 if (newDist < distances.get(edge.destination)) {
                     distances.put(edge.destination, newDist);
                     previousNodes.put(edge.destination, current);
@@ -231,7 +237,7 @@ public class Graph<T> implements VisitableGraph<T> {
         recursionStack.add(current);
 
         for (Edge<T> neighbor : adjacencyList.get(current)) {
-            var destination = neighbor.destination;
+            T destination = neighbor.destination;
             if (!visited.contains(destination)) {
                 if (dfs(destination, visited, recursionStack)) {
                     return true;
@@ -261,7 +267,7 @@ public class Graph<T> implements VisitableGraph<T> {
         while (!queue.isEmpty()) {
             T current = queue.poll();
             for (Edge<T> neighbor : adjacencyList.getOrDefault(current, new ArrayList<>())) {
-                var destination = neighbor.destination;
+                T destination = neighbor.destination;
                 if (!visited.contains(destination)) {
                     visited.add(destination);
                     queue.add(destination);
