@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public class Utils {
 
     private Utils() {
@@ -70,6 +71,18 @@ public class Utils {
 
     public static long[] arrayOf(long... longs) {
         return longs;
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Math {
+
+        public static double euclideanDistance(Coordinates3D a, Coordinates3D b) {
+            long dx = (long) a.x() - b.x();
+            long dy = (long) a.y() - b.y();
+            long dz = (long) a.z() - b.z();
+
+            return java.lang.Math.sqrt(dx * dx + dy * dy + dz * dz + 0.0);
+        }
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -1,10 +1,12 @@
 package aoc.aoc.days.implementation;
 
 import aoc.aoc.days.interfaces.DayStringParser;
-import aoc.aoc.util.Graph;
-import aoc.aoc.util.Pair;
+import aoc.aoc.util.Coordinates3D;
+import aoc.aoc.util.DisjointSet;
 
 import java.util.*;
+
+import static aoc.aoc.util.Utils.Math.euclideanDistance;
 
 public class Day08 extends DayStringParser {
 
@@ -14,79 +16,77 @@ public class Day08 extends DayStringParser {
 
     @Override
     protected Object part1Impl(String input) {
-        return solve2(input);
+        return findOptimalConnections(input);
     }
 
     @Override
     protected Object part2Impl(String input) {
-        return solve2(input);
+        return findOptimalConnections(input);
     }
 
-    private record Box(int x, int y, int z) {
+    private record Box(int x, int y, int z) implements Coordinates3D {
     }
 
-    private long solve2(String input) {
+    record BoxPair(Box from, Box to, double distance) implements Comparable<BoxPair> {
+        @Override
+        public int compareTo(BoxPair o) {
+            return Double.compare(this.distance, o.distance);
+        }
+    }
+
+    private long findOptimalConnections(String input) {
         var boxes = parseBoxes(input);
-        var graph = new Graph<Box>();
-
-        var sorted = getSortedPairs(boxes);
+        var heap = getPairHeap(boxes);
+        var disjointSet = new DisjointSet<Box>();
+        for (var b : boxes)
+            disjointSet.make(b);
 
         int connectionLimit = isSample() ? SAMPLE_LIMIT : REAL_LIMIT;
-        for (var pair : sorted.values()) {
-            var from = pair.first();
-            var to = pair.second();
+        while (!heap.isEmpty()) {
+            var pair = heap.poll();
+            var from = pair.from;
+            var to = pair.to;
 
-            graph.addEdge(from, to);
-            graph.addEdge(to, from);
+            disjointSet.union(from, to);
 
-            if (isPart2()) {
-                if (graph.allReachableFrom(from).size() == boxes.size())
-                    return (long) from.x() * to.x();
-            } else if (--connectionLimit <= 0) {
+            if (isPart2() && disjointSet.components() == 1)
+                return (long) from.x * to.x;
+            else if (isPart1() && --connectionLimit <= 0)
                 break;
-            }
         }
 
-        return getTopConnections(boxes, graph);
+        return getTopConnections(boxes, disjointSet);
     }
 
-    private static TreeMap<Double, Pair<Box, Box>> getSortedPairs(List<Box> boxes) {
-        var sorted = new TreeMap<Double, Pair<Box, Box>>();
-        for (int i = 0; i < boxes.size(); i++) {
-            for (int j = i + 1; j < boxes.size(); j++) {
-                Box from = boxes.get(i);
-                Box to = boxes.get(j);
-
-                if (from.equals(to))
-                    continue;
-
-                double dist = distance(from, to);
-                var pair = new Pair<>(from, to);
-                sorted.put(dist, pair);
-            }
+    private static long getTopConnections(List<Box> boxes, DisjointSet<Box> disjointSet) {
+        var sizes = new HashMap<Box, Integer>();
+        for (var box : boxes) {
+            var root = disjointSet.find(box);
+            sizes.merge(root, 1, Integer::sum);
         }
-        return sorted;
-    }
 
-    private static double distance(Box a, Box b) {
-        long dx = (long) a.x() - b.x();
-        long dy = (long) a.y() - b.y();
-        long dz = (long) a.z() - b.z();
-
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    private static long getTopConnections(List<Box> boxes, Graph<Box> graph) {
-        var all = new HashSet<Set<Box>>();
-        for (Box box : boxes)
-            all.add(graph.allReachableFrom(box));
-
-        return all.stream()
-                .map(Set::size)
+        return sizes.values().stream()
                 .sorted(Comparator.reverseOrder())
                 .limit(TOP_CONNECTIONS)
                 .mapToLong(Integer::longValue)
                 .reduce(1L, (a, b) -> a * b);
+    }
+
+    private static PriorityQueue<BoxPair> getPairHeap(List<Box> boxes) {
+        var list = new ArrayList<BoxPair>();
+
+        for (int i = 0; i < boxes.size(); i++) {
+            var from = boxes.get(i);
+            for (int j = i + 1; j < boxes.size(); j++) {
+                if (i == j)
+                    continue;
+
+                var to = boxes.get(j);
+                list.add(new BoxPair(from, to, euclideanDistance(from, to)));
+            }
+        }
+
+        return new PriorityQueue<>(list);
     }
 
     private static List<Box> parseBoxes(String input) {
