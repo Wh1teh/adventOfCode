@@ -10,7 +10,9 @@ import aoc.aoc.util.MatrixUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static aoc.aoc.util.Utils.isOdd;
 
@@ -27,115 +29,37 @@ public class Day09 extends DayStringParser {
     @Override
     protected Object part2Impl(String input) {
         var positions = parseCoordinates(input);
-        var edges = new HashMap<Coordinate, Coordinate>();
-
-        var previous = positions.getLast();
-        for (Coordinate current : positions) {
-            edges.put(previous, current);
-            previous = current;
-        }
-        
-
         var areas = calculateAreas(positions);
-        int size = areas.size();
-        int counter = 0;
-        Area best = null;
-        for (int compress = 256; compress > 0; compress>>=1) {
-            doStuff(areas, counter, size, edges, compress);
+
+        var godPolygon = new java.awt.Polygon();
+        for (Coordinate position : positions) {
+            godPolygon.addPoint(position.x(),position.y());
         }
-
-
-        return best.area;
-    }
-
-    private List<Area> doStuff(List<Area> areas, int counter, int size, Map<Coordinate, Coordinate> edges, int compress) {
-        
-        int index = 0;
-        for(var area : areas) {
-            System.out.printf("%s/%s%n", ++counter, size);
-            boolean result = isAreaIsInside(edges, 
-                    new Coordinate(area.from.y()/compress, area.from.x()/compress), 
-                    new Coordinate(area.to.y()/compress, area.to.x()/compress));
-
-            if (result) {
-                break;
-            }
-                
-            ++index;
-        }
-
-        var fresh = new ArrayList<Area>();
-        for (int i = index; i < areas.size(); i++) {
-            fresh.add(areas.get(i));
-        }
-        
-        return fresh;
-    }
-
-    private boolean isAreaIsInside(Map<Coordinate, Coordinate> edges, Coordinate from, Coordinate to) {
-//        var from = area.from;
-//        var to = area.to;
-
-        int minX = Math.min(from.x(), to.x());
-        int maxX = Math.max(from.x(), to.x());
-        int minY = Math.min(from.y(), to.y());
-        int maxY = Math.max(from.y(), to.y());
-        
-        for (int y = minY; y <= maxY; y++) {
-            for (int x = minX; x <= maxX; x++) {
-                if (x == minX || x == maxX || y == minY || y == maxY) {
-                    boolean isInside = isInside(edges,new Coordinate(y,x));
-                    if (!isInside) {
-                        return false;
-                    }
-                }
-
-            }
-        }
-        
-        return true;
-    }
-
-    protected boolean isInside(Map<Coordinate, Coordinate> edges, Coordinate position) {
-        if (edges.containsKey(position))
-            return true;
-        
-        int xp = position.x();
-        int yp = position.y();
-        
-        int count = 0;
-        for (var edge : edges.entrySet()) {
-            int x1 = edge.getKey().x(), y1 = edge.getKey().y();
-            int x2 = edge.getValue().x(), y2 = edge.getValue().y();
-            boolean isOverOrUnder = (yp < y1 && yp < y2) || (yp > y1 && yp > y2);
-            boolean isRightOfBoth = xp > x1 && xp > x2;
-            boolean isLeftOfBoth = xp < x1 && xp < x2;
-            boolean isSameColumn = (xp == x1 && x1 == x2);
-            boolean isSameRow = (yp == y1 && y1 == y2);
-            boolean edgeIsHorizontal = y1 == y2;
-            boolean edgeIsVertical = x1 == x2;
+        var polyArea = new java.awt.geom.Area(godPolygon);
+        for (Area area : areas) {
+            var quad = new java.awt.Polygon();
+            int xMin = Math.min(area.from.x(), area.to.x());
+            int xMax = Math.max(area.from.x(), area.to.x());
+            int yMin = Math.min(area.from.y(), area.to.y());
+            int yMax = Math.max(area.from.y(), area.to.y());
+            quad.addPoint(xMin, yMin);
+            quad.addPoint(xMax, yMin);
+            quad.addPoint(xMax, yMax);
+            quad.addPoint(xMin, yMax);
             
-            if (edgeIsVertical && xp == x1 && between(yp,y1,y2))
-                return true;
-            if (edgeIsHorizontal && yp == y1 && between(xp,x1,x2))
-                return true;
-
-            if ((yp < y1) != (yp < y2) && xp < x1 + ((yp-y1)/(y2-y1))*(x2-x1))
-                ++count;
+            var quadArea = new java.awt.geom.Area(quad);
+            quadArea.subtract(polyArea);
+            boolean isInside = quadArea.isEmpty();
+            if (isInside) {
+                return area.area;
+            }
         }
+
         
-        return isOdd(count);
-    }
+        
 
-    public static boolean between(int p, int a, int b) {
-        return (p >= Math.min(a, b) && p <= Math.max(a, b));
-    }
 
-    private static int @NotNull [] arrayFromCoordinates(Coordinate from) {
-        return new int[]{from.y(), from.x()};
-    }
-
-    record Node(Coordinate position, Coordinate next, boolean goingUpOrRight) {
+        return -1;
     }
 
     record Area(Coordinate from, Coordinate to, long area) implements Comparable<Area> {
