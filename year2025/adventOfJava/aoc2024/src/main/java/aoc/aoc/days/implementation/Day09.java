@@ -4,7 +4,6 @@ import aoc.aoc.cache.MemoIgnore;
 import aoc.aoc.cache.Memoize;
 import aoc.aoc.days.interfaces.DayStringParser;
 import aoc.aoc.util.Coordinate;
-import aoc.aoc.util.KDTree;
 import aoc.aoc.util.Matrix;
 import aoc.aoc.util.MatrixUtils;
 import org.jetbrains.annotations.NotNull;

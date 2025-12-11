@@ -42,8 +42,16 @@ public class Utils {
         );
     }
 
+    public static boolean isOdd(int number) {
+        return !isEven(number);
+    }
+
     public static boolean isEven(int number) {
         return (number & 1) == 0;
+    }
+
+    public static boolean nthBit(int value, byte index) {
+        return ((value >>> index) & 1) == 1;
     }
 
     public static String toStringStripBracketsAndWhiteSpace(Object object) {
