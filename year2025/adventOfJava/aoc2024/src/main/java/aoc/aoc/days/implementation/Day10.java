@@ -1,14 +1,10 @@
 package aoc.aoc.days.implementation;
 
-import aoc.aoc.cache.MemoIgnore;
-import aoc.aoc.cache.Memoize;
 import aoc.aoc.days.interfaces.DayStringParser;
-import aoc.aoc.util.Graph;
-import aoc.aoc.util.Pair;
+import aoc.aoc.util.GenericGraph;
 import aoc.aoc.util.Utils;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 public class Day10 extends DayStringParser {
 
@@ -144,7 +140,7 @@ public class Day10 extends DayStringParser {
     protected record LightBox(int goal, int[] instructions, int[] joltages) {
     }
     
-    private static void createInstructionGraph(int[] instructions, Graph<Integer> graph) {
+    private static void createInstructionGraph(int[] instructions, GenericGraph<Integer> graph) {
         for (var from : instructions) {
             for (var to : instructions) {
                 graph.addEdge(from, to);

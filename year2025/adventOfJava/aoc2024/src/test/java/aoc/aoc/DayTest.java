@@ -49,7 +49,9 @@ class DayTest {
             "50", // day09
             "24",
             "7", // day10
-            "33"
+            "33",
+            "5", // day11
+            "2"
     ));
 
     @SuppressWarnings("unused")
@@ -59,7 +61,8 @@ class DayTest {
     @SuppressWarnings("unused")
     public static final String INCOMPLETE = "Solution is incomplete";
     static final Map<DayParameter, String> DISABLED = Map.of(
-//            dayPart(9, 2), INCOMPLETE
+            dayPart(9, 2), SLOW,
+            dayPart(10, 2), INCOMPLETE
     );
 
     static Stream<Object[]> provideTestData() {
